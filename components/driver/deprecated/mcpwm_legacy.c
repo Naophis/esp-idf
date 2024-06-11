@@ -289,15 +289,15 @@ esp_err_t mcpwm_set_duty(mcpwm_unit_t mcpwm_num, mcpwm_timer_t timer_num, mcpwm_
     const int op = timer_num;
     //the driver currently always use the comparator A for PWMxA output, and comparator B for PWMxB output
     const int cmp = gen;
-    MCPWM_GEN_CHECK(mcpwm_num, timer_num, gen);
+    // MCPWM_GEN_CHECK(mcpwm_num, timer_num, gen);
     mcpwm_hal_context_t *hal = &context[mcpwm_num].hal;
 
-    mcpwm_critical_enter(mcpwm_num);
+    // mcpwm_critical_enter(mcpwm_num);
     uint32_t set_duty = mcpwm_ll_timer_get_peak(hal->dev, timer_num, false) * duty / 100;
     mcpwm_ll_operator_set_compare_value(hal->dev, op, cmp, set_duty);
     mcpwm_ll_operator_enable_update_compare_on_tez(hal->dev, op, cmp, true);
     mcpwm_ll_operator_enable_update_compare_on_tep(hal->dev, op, cmp, true);
-    mcpwm_critical_exit(mcpwm_num);
+    // mcpwm_critical_exit(mcpwm_num);
     return ESP_OK;
 }
 
