@@ -295,7 +295,7 @@ esp_err_t sdspi_host_set_card_clk(sdspi_dev_handle_t handle, uint32_t freq_khz)
     if (slot == NULL) {
         return ESP_ERR_INVALID_ARG;
     }
-    ESP_LOGD(TAG, "Setting card clock to %"PRIu32" kHz", freq_khz);
+    // ESP_LOGD(TAG, "Setting card clock to %"PRIu32" kHz", freq_khz);
     return configure_spi_dev(slot, freq_khz * 1000);
 }
 
@@ -322,9 +322,9 @@ static void gpio_intr(void* arg)
 
 esp_err_t sdspi_host_init_device(const sdspi_device_config_t* slot_config, sdspi_dev_handle_t* out_handle)
 {
-    ESP_LOGD(TAG, "%s: SPI%d cs=%d cd=%d wp=%d",
-             __func__, slot_config->host_id + 1, slot_config->gpio_cs,
-             slot_config->gpio_cd, slot_config->gpio_wp);
+    // ESP_LOGD(TAG, "%s: SPI%d cs=%d cd=%d wp=%d",
+    //          __func__, slot_config->host_id + 1, slot_config->gpio_cs,
+    //          slot_config->gpio_cd, slot_config->gpio_wp);
 
     slot_info_t* slot = (slot_info_t*)malloc(sizeof(slot_info_t));
     if (slot == NULL) {
@@ -338,7 +338,7 @@ esp_err_t sdspi_host_init_device(const sdspi_device_config_t* slot_config, sdspi
     // Attach the SD card to the SPI bus
     esp_err_t ret = configure_spi_dev(slot, SDMMC_FREQ_PROBING * 1000);
     if (ret != ESP_OK) {
-        ESP_LOGD(TAG, "spi_bus_add_device failed with rc=0x%x", ret);
+        // ESP_LOGD(TAG, "spi_bus_add_device failed with rc=0x%x", ret);
         goto cleanup;
     }
 
@@ -357,7 +357,7 @@ esp_err_t sdspi_host_init_device(const sdspi_device_config_t* slot_config, sdspi
     if (slot->gpio_cs != GPIO_UNUSED) {
         ret = gpio_config(&io_conf);
         if (ret != ESP_OK) {
-            ESP_LOGD(TAG, "gpio_config (CS) failed with rc=0x%x", ret);
+            // ESP_LOGD(TAG, "gpio_config (CS) failed with rc=0x%x", ret);
             goto cleanup;
         }
         cs_high(slot);
@@ -387,7 +387,7 @@ esp_err_t sdspi_host_init_device(const sdspi_device_config_t* slot_config, sdspi
     if (io_conf.pin_bit_mask != 0) {
         ret = gpio_config(&io_conf);
         if (ret != ESP_OK) {
-            ESP_LOGD(TAG, "gpio_config (CD/WP) failed with rc=0x%x", ret);
+            // ESP_LOGD(TAG, "gpio_config (CD/WP) failed with rc=0x%x", ret);
             goto cleanup;
         }
     }
@@ -402,7 +402,7 @@ esp_err_t sdspi_host_init_device(const sdspi_device_config_t* slot_config, sdspi
         };
         ret = gpio_config(&io_conf);
         if (ret != ESP_OK) {
-            ESP_LOGE(TAG, "gpio_config (interrupt) failed with rc=0x%x", ret);
+            // ESP_LOGE(TAG, "gpio_config (interrupt) failed with rc=0x%x", ret);
             goto cleanup;
         }
 
@@ -418,7 +418,7 @@ esp_err_t sdspi_host_init_device(const sdspi_device_config_t* slot_config, sdspi
         // 3. the gpio_int member should be filled before the ISR is registered
         ret = gpio_isr_handler_add(slot->gpio_int, &gpio_intr, slot);
         if (ret != ESP_OK) {
-            ESP_LOGE(TAG, "gpio_isr_handle_add failed with rc=0x%x", ret);
+            // ESP_LOGE(TAG, "gpio_isr_handle_add failed with rc=0x%x", ret);
             goto cleanup;
         }
     } else {
@@ -457,8 +457,8 @@ esp_err_t sdspi_host_start_command(sdspi_dev_handle_t handle, sdspi_hw_cmd_t *cm
     uint32_t cmd_arg;
     memcpy(&cmd_arg, cmd->arguments, sizeof(cmd_arg));
     cmd_arg = __builtin_bswap32(cmd_arg);
-    ESP_LOGV(TAG, "%s: slot=%i, CMD%d, arg=0x%08"PRIx32" flags=0x%x, data=%p, data_size=%"PRIu32" crc=0x%02x",
-             __func__, handle, cmd_index, cmd_arg, flags, data, data_size, cmd->crc7);
+    // ESP_LOGV(TAG, "%s: slot=%i, CMD%d, arg=0x%08"PRIx32" flags=0x%x, data=%p, data_size=%"PRIu32" crc=0x%02x",
+    //          __func__, handle, cmd_index, cmd_arg, flags, data, data_size, cmd->crc7);
 
     spi_device_acquire_bus(slot->spi_handle, portMAX_DELAY);
     poll_busy(slot, 40, true);
@@ -490,12 +490,12 @@ esp_err_t sdspi_host_start_command(sdspi_dev_handle_t handle, sdspi_hw_cmd_t *cm
     spi_device_release_bus(slot->spi_handle);
 
     if (ret != ESP_OK) {
-        ESP_LOGD(TAG, "%s: cmd=%d error=0x%x", __func__, cmd_index, ret);
+        // ESP_LOGD(TAG, "%s: cmd=%d error=0x%x", __func__, cmd_index, ret);
     } else {
         // Update internal state when some commands are sent successfully
         if (cmd_index == SD_CRC_ON_OFF) {
             slot->data_crc_enabled = (uint8_t) cmd_arg;
-            ESP_LOGD(TAG, "data CRC set=%d", slot->data_crc_enabled);
+            // ESP_LOGD(TAG, "data CRC set=%d", slot->data_crc_enabled);
         }
     }
     return ret;
@@ -533,12 +533,12 @@ static esp_err_t start_command_default(slot_info_t *slot, int flags, sdspi_hw_cm
         cmd->r1 = 0xff;
     }
     if (ret != ESP_OK) {
-        ESP_LOGD(TAG, "%s: spi_device_polling_transmit returned 0x%x", __func__, ret);
+        // ESP_LOGD(TAG, "%s: spi_device_polling_transmit returned 0x%x", __func__, ret);
         return ret;
     }
     if (flags & SDSPI_CMD_FLAG_NORSP) {
         /* no (correct) response expected from the card, so skip polling loop */
-        ESP_LOGV(TAG, "%s: ignoring response byte", __func__);
+        // ESP_LOGV(TAG, "%s: ignoring response byte", __func__);
         cmd->r1 = 0x00;
     }
     // we have sent and received bytes with enough length.
@@ -586,7 +586,7 @@ static esp_err_t poll_busy(slot_info_t *slot, int timeout_ms, bool polling)
             }
         }
     } while(esp_timer_get_time() < t_end);
-    ESP_LOGD(TAG, "%s: timeout", __func__);
+    // ESP_LOGD(TAG, "%s: timeout", __func__);
     return ESP_ERR_TIMEOUT;
 }
 
@@ -619,8 +619,8 @@ static esp_err_t poll_data_token(slot_info_t *slot, uint8_t *extra_ptr, size_t *
                 break;
             }
             if (rd_data != 0xff && rd_data != 0) {
-                ESP_LOGD(TAG, "%s: received 0x%02x while waiting for data",
-                        __func__, rd_data);
+                // ESP_LOGD(TAG, "%s: received 0x%02x while waiting for data",
+                //         __func__, rd_data);
                 return ESP_ERR_INVALID_RESPONSE;
             }
         }
@@ -628,7 +628,7 @@ static esp_err_t poll_data_token(slot_info_t *slot, uint8_t *extra_ptr, size_t *
             return ESP_OK;
         }
     } while (esp_timer_get_time() < t_end);
-    ESP_LOGD(TAG, "%s: timeout", __func__);
+    // ESP_LOGD(TAG, "%s: timeout", __func__);
     return ESP_ERR_TIMEOUT;
 }
 
@@ -721,7 +721,7 @@ static esp_err_t start_command_read_blocks(slot_info_t *slot, sdspi_hw_cmd_t *cm
         --pre_scan_data_size;
     }
     if (cmd->r1 & SD_SPI_R1_NO_RESPONSE) {
-        ESP_LOGD(TAG, "no response token found");
+        // ESP_LOGD(TAG, "no response token found");
         return ESP_ERR_TIMEOUT;
     }
 
@@ -791,7 +791,7 @@ static esp_err_t start_command_read_blocks(slot_info_t *slot, sdspi_hw_cmd_t *cm
         if (slot->data_crc_enabled) {
             crc_of_data = sdspi_crc16(data, will_receive + extra_data_size);
             if (crc_of_data != crc) {
-                ESP_LOGE(TAG, "data CRC failed, got=0x%04x expected=0x%04x", crc_of_data, crc);
+                // ESP_LOGE(TAG, "data CRC failed, got=0x%04x expected=0x%04x", crc_of_data, crc);
                 esp_log_buffer_hex(TAG, data, 16);
                 return ESP_ERR_INVALID_CRC;
             }
@@ -813,7 +813,7 @@ static esp_err_t start_command_read_blocks(slot_info_t *slot, sdspi_hw_cmd_t *cm
             return ret;
         }
         if (stop_cmd.r1 != 0) {
-            ESP_LOGD(TAG, "%s: STOP_TRANSMISSION response 0x%02x", __func__, stop_cmd.r1);
+            // ESP_LOGD(TAG, "%s: STOP_TRANSMISSION response 0x%02x", __func__, stop_cmd.r1);
         }
         ret = poll_busy(slot, cmd->timeout_ms, use_polling);
         if (ret != ESP_OK) {
@@ -832,7 +832,7 @@ static esp_err_t start_command_write_blocks(slot_info_t *slot, sdspi_hw_cmd_t *c
         const uint8_t *data, uint32_t tx_length, bool multi_block, bool stop_trans)
 {
     if (card_write_protected(slot)) {
-        ESP_LOGW(TAG, "%s: card write protected", __func__);
+        // ESP_LOGW(TAG, "%s: card write protected", __func__);
         return ESP_ERR_INVALID_STATE;
     }
     // Send the minimum length that is sure to get the complete response
@@ -852,7 +852,7 @@ static esp_err_t start_command_write_blocks(slot_info_t *slot, sdspi_hw_cmd_t *c
     // check if command response valid
     ret = shift_cmd_response(cmd, send_bytes);
     if (ret != ESP_OK) {
-        ESP_LOGD(TAG, "%s: check_cmd_response returned 0x%x", __func__, ret);
+        // ESP_LOGD(TAG, "%s: check_cmd_response returned 0x%x", __func__, ret);
         return ret;
     }
 

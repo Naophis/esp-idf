@@ -102,7 +102,7 @@ bool spicommon_periph_claim(spi_host_device_t host, const char* source)
         spi_claiming_func[host] = source;
         periph_module_enable(spi_periph_signal[host].module);
     } else {
-        ESP_EARLY_LOGE(SPI_TAG, "SPI%d already claimed by %s.", host+1, spi_claiming_func[host]);
+        // ESP_EARLY_LOGE(SPI_TAG, "SPI%d already claimed by %s.", host+1, spi_claiming_func[host]);
     }
     return ret;
 }
@@ -153,7 +153,7 @@ static bool claim_dma_chan(int dma_chan, uint32_t *out_actual_dma_chan)
 {
     bool ret = false;
 
-    portENTER_CRITICAL(&spi_dma_spinlock);
+    // portENTER_CRITICAL(&spi_dma_spinlock);
     bool is_used = (BIT(dma_chan) & spi_dma_chan_enabled);
     if (!is_used) {
         spi_dma_chan_enabled |= BIT(dma_chan);
@@ -161,7 +161,7 @@ static bool claim_dma_chan(int dma_chan, uint32_t *out_actual_dma_chan)
         *out_actual_dma_chan = dma_chan;
         ret = true;
     }
-    portEXIT_CRITICAL(&spi_dma_spinlock);
+    // portEXIT_CRITICAL(&spi_dma_spinlock);
 
     return ret;
 }
@@ -330,10 +330,10 @@ static esp_err_t dma_chan_free(spi_host_device_t host_id)
     int dma_chan = ctx->bus_attr.tx_dma_chan;
     assert(spi_dma_chan_enabled & BIT(dma_chan));
 
-    portENTER_CRITICAL(&spi_dma_spinlock);
+    // portENTER_CRITICAL(&spi_dma_spinlock);
     spi_dma_chan_enabled &= ~BIT(dma_chan);
     periph_module_disable(get_dma_periph(dma_chan));
-    portEXIT_CRITICAL(&spi_dma_spinlock);
+    // portEXIT_CRITICAL(&spi_dma_spinlock);
 
 #else //SOC_GDMA_SUPPORTED
     if (ctx->rx_channel) {
@@ -573,26 +573,26 @@ esp_err_t spicommon_bus_initialize_io(spi_host_device_t host, const spi_bus_conf
     if (missing_flag != 0) {
     //check pins existence
         if (missing_flag & SPICOMMON_BUSFLAG_SCLK) {
-            ESP_LOGE(SPI_TAG, "sclk pin required.");
+            // ESP_LOGE(SPI_TAG, "sclk pin required.");
         }
         if (missing_flag & SPICOMMON_BUSFLAG_MOSI) {
-            ESP_LOGE(SPI_TAG, "mosi pin required.");
+            // ESP_LOGE(SPI_TAG, "mosi pin required.");
         }
         if (missing_flag & SPICOMMON_BUSFLAG_MISO) {
-            ESP_LOGE(SPI_TAG, "miso pin required.");
+            // ESP_LOGE(SPI_TAG, "miso pin required.");
         }
         if (missing_flag & SPICOMMON_BUSFLAG_DUAL) {
-            ESP_LOGE(SPI_TAG, "not both mosi and miso output capable");
+            // ESP_LOGE(SPI_TAG, "not both mosi and miso output capable");
         }
         if (missing_flag & SPICOMMON_BUSFLAG_WPHD) {
-            ESP_LOGE(SPI_TAG, "both wp and hd required.");
+            // ESP_LOGE(SPI_TAG, "both wp and hd required.");
         }
         if (missing_flag & SPICOMMON_BUSFLAG_IOMUX_PINS) {
-            ESP_LOGE(SPI_TAG, "not using iomux pins");
+            // ESP_LOGE(SPI_TAG, "not using iomux pins");
         }
 #if SOC_SPI_SUPPORT_OCT
         if (missing_flag & SPICOMMON_BUSFLAG_IO4_IO7) {
-            ESP_LOGE(SPI_TAG, "spi data4 ~ spi data7 are required.");
+            // ESP_LOGE(SPI_TAG, "spi data4 ~ spi data7 are required.");
         }
 #endif
         SPI_CHECK(missing_flag == 0, "not all required capabilities satisfied.", ESP_ERR_INVALID_ARG);
@@ -601,11 +601,11 @@ esp_err_t spicommon_bus_initialize_io(spi_host_device_t host, const spi_bus_conf
     if (use_iomux) {
         //All SPI iomux pin selections resolve to 1, so we put that here instead of trying to figure
         //out which FUNC_GPIOx_xSPIxx to grab; they all are defined to 1 anyway.
-        ESP_LOGD(SPI_TAG, "SPI%d use iomux pins.", host+1);
+        // ESP_LOGD(SPI_TAG, "SPI%d use iomux pins.", host+1);
         bus_iomux_pins_set(host, bus_config);
     } else {
         //Use GPIO matrix
-        ESP_LOGD(SPI_TAG, "SPI%d use gpio matrix.", host+1);
+        // ESP_LOGD(SPI_TAG, "SPI%d use gpio matrix.", host+1);
         if (bus_config->mosi_io_num >= 0) {
             if (mosi_need_output || (temp_flag&SPICOMMON_BUSFLAG_DUAL)) {
                 gpio_set_direction(bus_config->mosi_io_num, GPIO_MODE_INPUT_OUTPUT);
@@ -929,7 +929,7 @@ bool IRAM_ATTR spicommon_dmaworkaround_req_reset(int dmachan, dmaworkaround_cb_t
 
     int otherchan = (dmachan == 1) ? 2 : 1;
     bool ret;
-    portENTER_CRITICAL_ISR(&dmaworkaround_mux);
+    // portENTER_CRITICAL_ISR(&dmaworkaround_mux);
     if (dmaworkaround_channels_busy[otherchan-1]) {
         //Other channel is busy. Call back when it's done.
         dmaworkaround_cb = cb;
@@ -941,7 +941,7 @@ bool IRAM_ATTR spicommon_dmaworkaround_req_reset(int dmachan, dmaworkaround_cb_t
         periph_module_reset( PERIPH_SPI_DMA_MODULE );
         ret = true;
     }
-    portEXIT_CRITICAL_ISR(&dmaworkaround_mux);
+    // portEXIT_CRITICAL_ISR(&dmaworkaround_mux);
     return ret;
 }
 
@@ -952,7 +952,7 @@ bool IRAM_ATTR spicommon_dmaworkaround_reset_in_progress(void)
 
 void IRAM_ATTR spicommon_dmaworkaround_idle(int dmachan)
 {
-    portENTER_CRITICAL_ISR(&dmaworkaround_mux);
+    // portENTER_CRITICAL_ISR(&dmaworkaround_mux);
     dmaworkaround_channels_busy[dmachan-1] = 0;
     if (dmaworkaround_waiting_for_chan == dmachan) {
         //Reset DMA
@@ -962,13 +962,13 @@ void IRAM_ATTR spicommon_dmaworkaround_idle(int dmachan)
         dmaworkaround_cb(dmaworkaround_cb_arg);
 
     }
-    portEXIT_CRITICAL_ISR(&dmaworkaround_mux);
+    // portEXIT_CRITICAL_ISR(&dmaworkaround_mux);
 }
 
 void IRAM_ATTR spicommon_dmaworkaround_transfer_active(int dmachan)
 {
-    portENTER_CRITICAL_ISR(&dmaworkaround_mux);
+    // portENTER_CRITICAL_ISR(&dmaworkaround_mux);
     dmaworkaround_channels_busy[dmachan-1] = 1;
-    portEXIT_CRITICAL_ISR(&dmaworkaround_mux);
+    // portEXIT_CRITICAL_ISR(&dmaworkaround_mux);
 }
 #endif //#if CONFIG_IDF_TARGET_ESP32
