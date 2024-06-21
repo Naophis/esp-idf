@@ -11,7 +11,7 @@ set(srcs "mpu_hal.c"
          "${target}/efuse_hal.c")
 
 
-set(includes "${target}/include" "include" "platform_port/include")
+set(includes "${target}/include" "include" "platform_port/include" "../esp_timer/include")
 
 if(NOT CONFIG_HAL_WDT_USE_ROM_IMPL)
     list(APPEND srcs "wdt_hal_iram.c")

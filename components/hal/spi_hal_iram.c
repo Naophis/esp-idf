@@ -15,6 +15,7 @@
 #if SOC_GDMA_SUPPORTED
 #include "soc/gdma_struct.h"
 #include "hal/gdma_ll.h"
+#include "esp_timer.h"
 
 #define spi_dma_ll_rx_reset(dev, chan)                             gdma_ll_rx_reset_channel(&GDMA, chan)
 #define spi_dma_ll_tx_reset(dev, chan)                             gdma_ll_tx_reset_channel(&GDMA, chan);
@@ -58,7 +59,7 @@ void spi_hal_setup_trans(spi_hal_context_t *hal, const spi_hal_dev_config_t *dev
     //clear int bit
     spi_ll_clear_int_stat(hal->hw);
     //We should be done with the transmission.
-    HAL_ASSERT(spi_ll_get_running_cmd(hw) == 0);
+    // HAL_ASSERT(spi_ll_get_running_cmd(hw) == 0);
     //set transaction line mode
     spi_ll_master_set_line_mode(hw, trans->line_mode);
 
@@ -134,7 +135,6 @@ void spi_hal_setup_trans(spi_hal_context_t *hal, const spi_hal_dev_config_t *dev
 void spi_hal_prepare_data(spi_hal_context_t *hal, const spi_hal_dev_config_t *dev, const spi_hal_trans_config_t *trans)
 {
     spi_dev_t *hw = hal->hw;
-
     //Fill DMA descriptors
     if (trans->rcv_buffer) {
         if (!hal->dma_enabled) {

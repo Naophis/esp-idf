@@ -29,6 +29,7 @@ set(includes "include"
              "touch_sensor/include"
              "twai/include"
              "uart/include"
+             "../esp_timer/include"
              "usb_serial_jtag/include")
 
 # ADC related source files (dprecated)

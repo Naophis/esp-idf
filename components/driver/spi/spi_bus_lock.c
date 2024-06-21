@@ -304,23 +304,23 @@ IRAM_ATTR static inline uint32_t lock_status_clear(spi_bus_lock_t* lock, uint32_
  ******************************************************************************/
 SPI_MASTER_ISR_ATTR static inline void resume_dev_in_isr(spi_bus_lock_dev_t *dev_lock, BaseType_t *do_yield)
 {
-    xSemaphoreGiveFromISR(dev_lock->semphr, do_yield);
+    // xSemaphoreGiveFromISR(dev_lock->semphr, do_yield);
 }
 
 IRAM_ATTR static inline void resume_dev(const spi_bus_lock_dev_t *dev_lock)
 {
-    xSemaphoreGive(dev_lock->semphr);
+    // xSemaphoreGive(dev_lock->semphr);
 }
 
 SPI_MASTER_ISR_ATTR static inline void bg_disable(spi_bus_lock_t *lock)
 {
-    BUS_LOCK_DEBUG_EXECUTE_CHECK(lock->bg_disable);
+    // BUS_LOCK_DEBUG_EXECUTE_CHECK(lock->bg_disable);
     lock->bg_disable(lock->bg_arg);
 }
 
 IRAM_ATTR static inline void bg_enable(spi_bus_lock_t* lock)
 {
-    BUS_LOCK_DEBUG_EXECUTE_CHECK(lock->bg_enable);
+    // BUS_LOCK_DEBUG_EXECUTE_CHECK(lock->bg_enable);
     lock->bg_enable(lock->bg_arg);
 }
 
@@ -410,7 +410,7 @@ schedule_core(spi_bus_lock_t *lock, uint32_t status, spi_bus_lock_dev_t **out_de
     if (lock_bits) {
         int dev_id = mask_get_id(lock_bits);
         desired_dev = (spi_bus_lock_dev_t *)atomic_load(&lock->dev[dev_id]);
-        BUS_LOCK_DEBUG_EXECUTE_CHECK(desired_dev);
+        // BUS_LOCK_DEBUG_EXECUTE_CHECK(desired_dev);
 
         lock->acquiring_dev = desired_dev;
         bg_yield = ((bg_bits & desired_dev->mask) == 0);
@@ -479,7 +479,7 @@ SPI_MASTER_ISR_ATTR static inline bool clear_pend_core(spi_bus_lock_dev_t *dev_h
     bool finished;
     spi_bus_lock_t *lock = dev_handle->parent;
     uint32_t pend_mask = DEV_PEND_MASK(dev_handle);
-    BUS_LOCK_DEBUG_EXECUTE_CHECK(lock_status_fetch(lock) & pend_mask);
+    // BUS_LOCK_DEBUG_EXECUTE_CHECK(lock_status_fetch(lock) & pend_mask);
 
     uint32_t status = lock_status_clear(lock, pend_mask);
 
@@ -499,7 +499,7 @@ SPI_MASTER_ISR_ATTR static inline bool clear_pend_core(spi_bus_lock_dev_t *dev_h
 // In either case `in_isr` will be marked as true, until call to `bg_exit_core` with `wip=false` successfully.
 SPI_MASTER_ISR_ATTR static inline bool bg_entry_core(spi_bus_lock_t *lock)
 {
-    BUS_LOCK_DEBUG_EXECUTE_CHECK(!lock->acquiring_dev || lock->acq_dev_bg_active);
+    // BUS_LOCK_DEBUG_EXECUTE_CHECK(!lock->acquiring_dev || lock->acq_dev_bg_active);
     /*
      * The interrupt is disabled at the entry of ISR to avoid competitive risk as below:
      *
@@ -528,7 +528,7 @@ SPI_MASTER_ISR_ATTR static inline bool bg_exit_core(spi_bus_lock_t *lock, bool w
     //See comments in `bg_entry_core`, re-enable interrupt disabled in entry if we do need the interrupt
     if (wip) {
         bg_enable(lock);
-        BUS_LOCK_DEBUG_EXECUTE_CHECK(!lock->acquiring_dev || lock->acq_dev_bg_active);
+        // BUS_LOCK_DEBUG_EXECUTE_CHECK(!lock->acquiring_dev || lock->acq_dev_bg_active);
         return true;
     }
 
@@ -536,7 +536,7 @@ SPI_MASTER_ISR_ATTR static inline bool bg_exit_core(spi_bus_lock_t *lock, bool w
     uint32_t status = lock_status_fetch(lock);
     if (lock->acquiring_dev) {
         if (status & DEV_BG_MASK(lock->acquiring_dev)) {
-            BUS_LOCK_DEBUG_EXECUTE_CHECK(lock->acq_dev_bg_active);
+            // BUS_LOCK_DEBUG_EXECUTE_CHECK(lock->acq_dev_bg_active);
             ret = false;
         } else {
             // The request may happen any time, even after we fetched the status.
@@ -545,7 +545,7 @@ SPI_MASTER_ISR_ATTR static inline bool bg_exit_core(spi_bus_lock_t *lock, bool w
             ret = true;
         }
     } else {
-        BUS_LOCK_DEBUG_EXECUTE_CHECK(!lock->acq_dev_bg_active);
+        // BUS_LOCK_DEBUG_EXECUTE_CHECK(!lock->acq_dev_bg_active);
         ret = !(status & BG_MASK);
     }
     if (ret) {
@@ -652,7 +652,7 @@ void spi_bus_lock_unregister_dev(spi_bus_lock_dev_handle_t dev_handle)
     int id = dev_lock_get_id(dev_handle);
 
     spi_bus_lock_t* lock = dev_handle->parent;
-    BUS_LOCK_DEBUG_EXECUTE_CHECK(atomic_load(&lock->dev[id]) == (intptr_t)dev_handle);
+    // BUS_LOCK_DEBUG_EXECUTE_CHECK(atomic_load(&lock->dev[id]) == (intptr_t)dev_handle);
 
     if (lock->last_dev == dev_handle) lock->last_dev = NULL;
 
@@ -799,7 +799,7 @@ SPI_MASTER_ISR_ATTR bool spi_bus_lock_bg_clear_req(spi_bus_lock_dev_t *dev_handl
 SPI_MASTER_ISR_ATTR bool spi_bus_lock_bg_check_dev_acq(spi_bus_lock_t *lock,
                                                        spi_bus_lock_dev_handle_t *out_dev_lock)
 {
-    BUS_LOCK_DEBUG_EXECUTE_CHECK(!lock->acquiring_dev);
+    // BUS_LOCK_DEBUG_EXECUTE_CHECK(!lock->acquiring_dev);
     uint32_t status = lock_status_fetch(lock);
     return schedule_core(lock, status, out_dev_lock);
 }

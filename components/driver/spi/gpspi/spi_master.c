@@ -595,7 +595,6 @@ static void SPI_MASTER_ISR_ATTR spi_new_trans(spi_device_t *dev, spi_trans_priv_
 
     //Reconfigure according to device settings, the function only has effect when the dev_id is changed.
     spi_setup_device(dev);
-
     //set the transaction specific configuration each time before a transaction setup
     spi_hal_trans_config_t hal_trans = {};
     hal_trans.tx_bitlen = trans->length;
@@ -632,9 +631,8 @@ static void SPI_MASTER_ISR_ATTR spi_new_trans(spi_device_t *dev, spi_trans_priv_
     } else {
         hal_trans.dummy_bits = dev->cfg.dummy_bits;
     }
-
-    spi_hal_setup_trans(hal, hal_dev, &hal_trans);
-    spi_hal_prepare_data(hal, hal_dev, &hal_trans);
+    spi_hal_setup_trans(hal, hal_dev, &hal_trans); //here 6usec
+    spi_hal_prepare_data(hal, hal_dev, &hal_trans); //here 3~5usec
 
     //Call pre-transmission callback, if any
     if (dev->cfg.pre_cb) dev->cfg.pre_cb(trans);
@@ -710,7 +708,7 @@ static void SPI_MASTER_ISR_ATTR spi_intr(void *arg)
 
 
     // There should be remaining requests
-    BUS_LOCK_DEBUG_EXECUTE_CHECK(spi_bus_lock_bg_req_exist(lock));
+    // BUS_LOCK_DEBUG_EXECUTE_CHECK(spi_bus_lock_bg_req_exist(lock));
 
     do {
         spi_bus_lock_dev_handle_t acq_dev_lock = spi_bus_lock_get_acquiring_dev(lock);

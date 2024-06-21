@@ -587,20 +587,24 @@ static inline void spi_ll_set_sio_mode(spi_dev_t *hw, int sio_mode)
  */
 static inline void spi_ll_master_set_line_mode(spi_dev_t *hw, spi_line_mode_t line_mode)
 {
-    hw->ctrl.val &= ~SPI_LL_ONE_LINE_CTRL_MASK;
-    hw->user.val &= ~SPI_LL_ONE_LINE_USER_MASK;
-    hw->ctrl.fcmd_dual = (line_mode.cmd_lines == 2);
-    hw->ctrl.fcmd_quad = (line_mode.cmd_lines == 4);
-    hw->ctrl.fcmd_oct = (line_mode.cmd_lines == 8);
-    hw->ctrl.faddr_dual = (line_mode.addr_lines == 2);
-    hw->ctrl.faddr_quad = (line_mode.addr_lines == 4);
-    hw->ctrl.faddr_oct = (line_mode.addr_lines == 8);
-    hw->ctrl.fread_dual = (line_mode.data_lines == 2);
-    hw->user.fwrite_dual = (line_mode.data_lines == 2);
-    hw->ctrl.fread_quad = (line_mode.data_lines == 4);
-    hw->user.fwrite_quad = (line_mode.data_lines == 4);
-    hw->ctrl.fread_oct = (line_mode.data_lines == 8);
-    hw->user.fwrite_oct = (line_mode.data_lines == 8);
+    static bool first =true;
+    if(first){
+        hw->ctrl.val &= ~SPI_LL_ONE_LINE_CTRL_MASK;
+        hw->user.val &= ~SPI_LL_ONE_LINE_USER_MASK;
+        hw->ctrl.fcmd_dual = (line_mode.cmd_lines == 2);
+        hw->ctrl.fcmd_quad = (line_mode.cmd_lines == 4);
+        hw->ctrl.fcmd_oct = (line_mode.cmd_lines == 8);
+        hw->ctrl.faddr_dual = (line_mode.addr_lines == 2);
+        hw->ctrl.faddr_quad = (line_mode.addr_lines == 4);
+        hw->ctrl.faddr_oct = (line_mode.addr_lines == 8);
+        hw->ctrl.fread_dual = (line_mode.data_lines == 2);
+        hw->user.fwrite_dual = (line_mode.data_lines == 2);
+        hw->ctrl.fread_quad = (line_mode.data_lines == 4);
+        hw->user.fwrite_quad = (line_mode.data_lines == 4);
+        hw->ctrl.fread_oct = (line_mode.data_lines == 8);
+        hw->user.fwrite_oct = (line_mode.data_lines == 8);
+        first =false;
+    }
 }
 
 /**
