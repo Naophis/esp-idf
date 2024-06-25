@@ -101,7 +101,7 @@ typedef enum {
  * @param hw Beginning address of the peripheral registers.
  * @param clk_source clock source to select, see valid sources in type `spi_clock_source_t`
  */
-static inline void spi_ll_set_clk_source(spi_dev_t *hw, spi_clock_source_t clk_source){
+static inline void IRAM_ATTR spi_ll_set_clk_source(spi_dev_t *hw, spi_clock_source_t clk_source){
     switch (clk_source)
     {
         case SPI_CLK_SRC_XTAL:
@@ -118,7 +118,7 @@ static inline void spi_ll_set_clk_source(spi_dev_t *hw, spi_clock_source_t clk_s
  *
  * @param hw Beginning address of the peripheral registers.
  */
-static inline void spi_ll_master_init(spi_dev_t *hw)
+static inline void IRAM_ATTR spi_ll_master_init(spi_dev_t *hw)
 {
     //Reset timing
     hw->user1.cs_setup_time = 0;
@@ -147,7 +147,7 @@ static inline void spi_ll_master_init(spi_dev_t *hw)
  *
  * @param hw Beginning address of the peripheral registers.
  */
-static inline void spi_ll_slave_init(spi_dev_t *hw)
+static inline void IRAM_ATTR spi_ll_slave_init(spi_dev_t *hw)
 {
     //Configure slave
     hw->clock.val = 0;
@@ -175,7 +175,7 @@ static inline void spi_ll_slave_init(spi_dev_t *hw)
  *
  * @param hw Beginning address of the peripheral registers.
  */
-static inline void spi_ll_slave_hd_init(spi_dev_t *hw)
+static inline void IRAM_ATTR spi_ll_slave_hd_init(spi_dev_t *hw)
 {
     hw->clock.val = 0;
     hw->user.val = 0;
@@ -193,7 +193,7 @@ static inline void spi_ll_slave_hd_init(spi_dev_t *hw)
  *
  * @param hw Beginning address of the peripheral registers.
  */
-static inline void spi_ll_set_mosi_free_level(spi_dev_t *hw, bool level)
+static inline void IRAM_ATTR spi_ll_set_mosi_free_level(spi_dev_t *hw, bool level)
 {
     hw->ctrl.d_pol = level;     //set default level for MOSI only on IDLE state
 }
@@ -203,7 +203,7 @@ static inline void spi_ll_set_mosi_free_level(spi_dev_t *hw, bool level)
  *
  * @param hw Beginning address of the peripheral registers.
  */
-static inline void spi_ll_apply_config(spi_dev_t *hw)
+static inline void IRAM_ATTR spi_ll_apply_config(spi_dev_t *hw)
 {
     hw->cmd.update = 1;
     while (hw->cmd.update);    //waiting config applied
@@ -216,7 +216,7 @@ static inline void spi_ll_apply_config(spi_dev_t *hw)
  *
  * @return   True if transaction is done, otherwise false.
  */
-static inline bool spi_ll_usr_is_done(spi_dev_t *hw)
+static inline bool IRAM_ATTR spi_ll_usr_is_done(spi_dev_t *hw)
 {
     return hw->dma_int_raw.trans_done;
 }
@@ -226,7 +226,7 @@ static inline bool spi_ll_usr_is_done(spi_dev_t *hw)
  *
  * @param hw Beginning address of the peripheral registers.
  */
-static inline void spi_ll_user_start(spi_dev_t *hw)
+static inline void IRAM_ATTR spi_ll_user_start(spi_dev_t *hw)
 {
     hw->cmd.usr = 1;
 }
@@ -238,7 +238,7 @@ static inline void spi_ll_user_start(spi_dev_t *hw)
  *
  * @return   Bitmask of running command, see ``SPI_CMD_REG``. 0 if no in-flight command.
  */
-static inline uint32_t spi_ll_get_running_cmd(spi_dev_t *hw)
+static inline uint32_t IRAM_ATTR spi_ll_get_running_cmd(spi_dev_t *hw)
 {
     return hw->cmd.val;
 }
@@ -248,7 +248,7 @@ static inline uint32_t spi_ll_get_running_cmd(spi_dev_t *hw)
  *
  * @param hw Beginning address of the peripheral registers.
  */
-static inline void spi_ll_slave_reset(spi_dev_t *hw)
+static inline void IRAM_ATTR spi_ll_slave_reset(spi_dev_t *hw)
 {
     hw->slave.soft_reset = 1;
     hw->slave.soft_reset = 0;
@@ -261,7 +261,7 @@ static inline void spi_ll_slave_reset(spi_dev_t *hw)
  *
  * @param hw Beginning address of the peripheral registers.
  */
-static inline void spi_ll_cpu_tx_fifo_reset(spi_dev_t *hw)
+static inline void IRAM_ATTR spi_ll_cpu_tx_fifo_reset(spi_dev_t *hw)
 {
     hw->dma_conf.buf_afifo_rst = 1;
     hw->dma_conf.buf_afifo_rst = 0;
@@ -274,7 +274,7 @@ static inline void spi_ll_cpu_tx_fifo_reset(spi_dev_t *hw)
  *
  * @param hw Beginning address of the peripheral registers.
  */
-static inline void spi_ll_cpu_rx_fifo_reset(spi_dev_t *hw)
+static inline void IRAM_ATTR spi_ll_cpu_rx_fifo_reset(spi_dev_t *hw)
 {
     hw->dma_conf.rx_afifo_rst = 1;
     hw->dma_conf.rx_afifo_rst = 0;
@@ -285,7 +285,7 @@ static inline void spi_ll_cpu_rx_fifo_reset(spi_dev_t *hw)
  *
  * @param hw Beginning address of the peripheral registers.
  */
-static inline void spi_ll_dma_tx_fifo_reset(spi_dev_t *hw)
+static inline void IRAM_ATTR spi_ll_dma_tx_fifo_reset(spi_dev_t *hw)
 {
     hw->dma_conf.dma_afifo_rst = 1;
     hw->dma_conf.dma_afifo_rst = 0;
@@ -296,7 +296,7 @@ static inline void spi_ll_dma_tx_fifo_reset(spi_dev_t *hw)
  *
  * @param hw Beginning address of the peripheral registers.
  */
-static inline void spi_ll_dma_rx_fifo_reset(spi_dev_t *hw)
+static inline void IRAM_ATTR spi_ll_dma_rx_fifo_reset(spi_dev_t *hw)
 {
     hw->dma_conf.rx_afifo_rst = 1;
     hw->dma_conf.rx_afifo_rst = 0;
@@ -307,7 +307,7 @@ static inline void spi_ll_dma_rx_fifo_reset(spi_dev_t *hw)
  *
  * @param hw Beginning address of the peripheral registers.
  */
-static inline void spi_ll_infifo_full_clr(spi_dev_t *hw)
+static inline void IRAM_ATTR spi_ll_infifo_full_clr(spi_dev_t *hw)
 {
     hw->dma_int_clr.infifo_full_err = 1;
 }
@@ -317,7 +317,7 @@ static inline void spi_ll_infifo_full_clr(spi_dev_t *hw)
  *
  * @param hw Beginning address of the peripheral registers.
  */
-static inline void spi_ll_outfifo_empty_clr(spi_dev_t *hw)
+static inline void IRAM_ATTR spi_ll_outfifo_empty_clr(spi_dev_t *hw)
 {
     hw->dma_int_clr.outfifo_empty_err = 1;
 }
@@ -331,7 +331,7 @@ static inline void spi_ll_outfifo_empty_clr(spi_dev_t *hw)
  * @param hw     Beginning address of the peripheral registers.
  * @param enable 1: enable; 2: disable
  */
-static inline void spi_ll_dma_rx_enable(spi_dev_t *hw, bool enable)
+static inline void IRAM_ATTR spi_ll_dma_rx_enable(spi_dev_t *hw, bool enable)
 {
     hw->dma_conf.dma_rx_ena = enable;
 }
@@ -342,7 +342,7 @@ static inline void spi_ll_dma_rx_enable(spi_dev_t *hw, bool enable)
  * @param hw     Beginning address of the peripheral registers.
  * @param enable 1: enable; 2: disable
  */
-static inline void spi_ll_dma_tx_enable(spi_dev_t *hw, bool enable)
+static inline void IRAM_ATTR spi_ll_dma_tx_enable(spi_dev_t *hw, bool enable)
 {
     hw->dma_conf.dma_tx_ena = enable;
 }
@@ -353,7 +353,7 @@ static inline void spi_ll_dma_tx_enable(spi_dev_t *hw, bool enable)
  * @param hw     Beginning address of the peripheral registers.
  * @param enable 1: spi_dma_inlink_eof is set when the number of dma pushed data bytes is equal to the value of spi_slv/mst_dma_rd_bytelen[19:0] in spi dma transition.  0: spi_dma_inlink_eof is set by spi_trans_done in non-seg-trans or spi_dma_seg_trans_done in seg-trans.
  */
-static inline void spi_ll_dma_set_rx_eof_generation(spi_dev_t *hw, bool enable)
+static inline void IRAM_ATTR spi_ll_dma_set_rx_eof_generation(spi_dev_t *hw, bool enable)
 {
     hw->dma_conf.rx_eof_en = enable;
 }
@@ -368,7 +368,7 @@ static inline void spi_ll_dma_set_rx_eof_generation(spi_dev_t *hw, bool enable)
  * @param buffer_to_send Address of the data to be written to the hardware data buffer.
  * @param bitlen         Length to write, in bits.
  */
-static inline void spi_ll_write_buffer(spi_dev_t *hw, const uint8_t *buffer_to_send, size_t bitlen)
+static inline void IRAM_ATTR spi_ll_write_buffer(spi_dev_t *hw, const uint8_t *buffer_to_send, size_t bitlen)
 {
     for (size_t x = 0; x < bitlen; x += 32) {
         //Use memcpy to get around alignment issues for txdata
@@ -386,7 +386,7 @@ static inline void spi_ll_write_buffer(spi_dev_t *hw, const uint8_t *buffer_to_s
  * @param data    Address of the data to be written to the hardware data buffer.
  * @param len     Length to write, in bytes.
  */
-static inline void spi_ll_write_buffer_byte(spi_dev_t *hw, int byte_id, uint8_t *data, int len)
+static inline void IRAM_ATTR spi_ll_write_buffer_byte(spi_dev_t *hw, int byte_id, uint8_t *data, int len)
 {
     HAL_ASSERT(byte_id + len <= 64);
     HAL_ASSERT(len > 0);
@@ -420,7 +420,7 @@ static inline void spi_ll_write_buffer_byte(spi_dev_t *hw, int byte_id, uint8_t 
  * @param buffer_to_rcv Address of a buffer to read data from hardware data buffer
  * @param bitlen        Length to read, in bits.
  */
-static inline void spi_ll_read_buffer(spi_dev_t *hw, uint8_t *buffer_to_rcv, size_t bitlen)
+static inline void IRAM_ATTR spi_ll_read_buffer(spi_dev_t *hw, uint8_t *buffer_to_rcv, size_t bitlen)
 {
     for (size_t x = 0; x < bitlen; x += 32) {
         //Do a memcpy to get around possible alignment issues in rx_buffer
@@ -441,7 +441,7 @@ static inline void spi_ll_read_buffer(spi_dev_t *hw, uint8_t *buffer_to_rcv, siz
  * @param data    Address of a buffer to read data from hardware data buffer
  * @param len     Length to read, in bytes.
  */
-static inline void spi_ll_read_buffer_byte(spi_dev_t *hw, int byte_id, uint8_t *out_data, int len)
+static inline void IRAM_ATTR spi_ll_read_buffer_byte(spi_dev_t *hw, int byte_id, uint8_t *out_data, int len)
 {
     while (len > 0) {
         uint32_t word = hw->data_buf[byte_id / 4];
@@ -468,7 +468,7 @@ static inline void spi_ll_read_buffer_byte(spi_dev_t *hw, int byte_id, uint8_t *
  * @param cs     One of the CS (0-2) to enable/disable the feature.
  * @param pos_cs True to enable the feature, otherwise disable (default).
  */
-static inline void spi_ll_master_set_pos_cs(spi_dev_t *hw, int cs, uint32_t pos_cs)
+static inline void IRAM_ATTR spi_ll_master_set_pos_cs(spi_dev_t *hw, int cs, uint32_t pos_cs)
 {
     if (pos_cs) {
         hw->misc.master_cs_pol |= (1 << cs);
@@ -483,7 +483,7 @@ static inline void spi_ll_master_set_pos_cs(spi_dev_t *hw, int cs, uint32_t pos_
  * @param hw       Beginning address of the peripheral registers.
  * @param lsbfirst True if LSB of TX data to be sent first, otherwise MSB is sent first (default).
  */
-static inline void spi_ll_set_tx_lsbfirst(spi_dev_t *hw, bool lsbfirst)
+static inline void IRAM_ATTR spi_ll_set_tx_lsbfirst(spi_dev_t *hw, bool lsbfirst)
 {
     hw->ctrl.wr_bit_order = lsbfirst;
 }
@@ -494,7 +494,7 @@ static inline void spi_ll_set_tx_lsbfirst(spi_dev_t *hw, bool lsbfirst)
  * @param hw       Beginning address of the peripheral registers.
  * @param lsbfirst True if first bit received as LSB, otherwise as MSB (default).
  */
-static inline void spi_ll_set_rx_lsbfirst(spi_dev_t *hw, bool lsbfirst)
+static inline void IRAM_ATTR spi_ll_set_rx_lsbfirst(spi_dev_t *hw, bool lsbfirst)
 {
     hw->ctrl.rd_bit_order = lsbfirst;
 }
@@ -505,7 +505,7 @@ static inline void spi_ll_set_rx_lsbfirst(spi_dev_t *hw, bool lsbfirst)
  * @param hw   Beginning address of the peripheral registers.
  * @param mode SPI mode to work at, 0-3.
  */
-static inline void spi_ll_master_set_mode(spi_dev_t *hw, uint8_t mode)
+static inline void IRAM_ATTR spi_ll_master_set_mode(spi_dev_t *hw, uint8_t mode)
 {
     //Configure polarity
     if (mode == 0) {
@@ -529,7 +529,7 @@ static inline void spi_ll_master_set_mode(spi_dev_t *hw, uint8_t mode)
  * @param hw   Beginning address of the peripheral registers.
  * @param mode SPI mode to work at, 0-3.
  */
-static inline void spi_ll_slave_set_mode(spi_dev_t *hw, const int mode, bool dma_used)
+static inline void IRAM_ATTR spi_ll_slave_set_mode(spi_dev_t *hw, const int mode, bool dma_used)
 {
     if (mode == 0) {
         hw->misc.ck_idle_edge = 0;
@@ -561,7 +561,7 @@ static inline void spi_ll_slave_set_mode(spi_dev_t *hw, const int mode, bool dma
  * @param hw          Beginning address of the peripheral registers.
  * @param half_duplex True to work in half duplex mode, otherwise in full duplex mode.
  */
-static inline void spi_ll_set_half_duplex(spi_dev_t *hw, bool half_duplex)
+static inline void IRAM_ATTR spi_ll_set_half_duplex(spi_dev_t *hw, bool half_duplex)
 {
     hw->user.doutdin = !half_duplex;
 }
@@ -574,7 +574,7 @@ static inline void spi_ll_set_half_duplex(spi_dev_t *hw, bool half_duplex)
  * @param hw       Beginning address of the peripheral registers.
  * @param sio_mode True to work in SIO mode, otherwise false.
  */
-static inline void spi_ll_set_sio_mode(spi_dev_t *hw, int sio_mode)
+static inline void IRAM_ATTR spi_ll_set_sio_mode(spi_dev_t *hw, int sio_mode)
 {
     hw->user.sio = sio_mode;
 }
@@ -585,7 +585,7 @@ static inline void spi_ll_set_sio_mode(spi_dev_t *hw, int sio_mode)
  * @param hw        Beginning address of the peripheral registers.
  * @param line_mode SPI transaction line mode to use, see ``spi_line_mode_t``.
  */
-static inline void spi_ll_master_set_line_mode(spi_dev_t *hw, spi_line_mode_t line_mode)
+static inline void IRAM_ATTR spi_ll_master_set_line_mode(spi_dev_t *hw, spi_line_mode_t line_mode)
 {
     static bool first =true;
     if(first){
@@ -613,7 +613,7 @@ static inline void spi_ll_master_set_line_mode(spi_dev_t *hw, spi_line_mode_t li
  * @param hw        Beginning address of the peripheral registers.
  * @param seg_trans True to work in seg mode, otherwise false.
  */
-static inline void spi_ll_slave_set_seg_mode(spi_dev_t *hw, bool seg_trans)
+static inline void IRAM_ATTR spi_ll_slave_set_seg_mode(spi_dev_t *hw, bool seg_trans)
 {
     hw->dma_conf.dma_seg_trans_en = seg_trans;
 }
@@ -624,7 +624,7 @@ static inline void spi_ll_slave_set_seg_mode(spi_dev_t *hw, bool seg_trans)
  * @param hw    Beginning address of the peripheral registers.
  * @param cs_id The cs to use, 0-2, otherwise none of them is used.
  */
-static inline void spi_ll_master_select_cs(spi_dev_t *hw, int cs_id)
+static inline void IRAM_ATTR spi_ll_master_select_cs(spi_dev_t *hw, int cs_id)
 {
     if (hw == &GPSPI2) {
         hw->misc.cs0_dis = (cs_id == 0) ? 0 : 1;
@@ -648,7 +648,7 @@ static inline void spi_ll_master_select_cs(spi_dev_t *hw, int cs_id)
  * @param hw Beginning address of the peripheral registers.
  * @param keep_active if 0 don't keep CS activated, else keep CS activated
  */
-static inline void spi_ll_master_keep_cs(spi_dev_t *hw, int keep_active)
+static inline void IRAM_ATTR spi_ll_master_keep_cs(spi_dev_t *hw, int keep_active)
 {
     hw->misc.cs_keep_active = (keep_active != 0) ? 1 : 0;
 }
@@ -662,7 +662,7 @@ static inline void spi_ll_master_keep_cs(spi_dev_t *hw, int keep_active)
  * @param hw  Beginning address of the peripheral registers.
  * @param val Stored clock configuration calculated before (by ``spi_ll_cal_clock``).
  */
-static inline void spi_ll_master_set_clock_by_reg(spi_dev_t *hw, const spi_ll_clock_val_t *val)
+static inline void IRAM_ATTR spi_ll_master_set_clock_by_reg(spi_dev_t *hw, const spi_ll_clock_val_t *val)
 {
     hw->clock.val = *(uint32_t *)val;
 }
@@ -676,7 +676,7 @@ static inline void spi_ll_master_set_clock_by_reg(spi_dev_t *hw, const spi_ll_cl
  *
  * @return     Frequency of given dividers.
  */
-static inline int spi_ll_freq_for_pre_n(int fapb, int pre, int n)
+static inline int IRAM_ATTR spi_ll_freq_for_pre_n(int fapb, int pre, int n)
 {
     return (fapb / (pre * n));
 }
@@ -691,7 +691,7 @@ static inline int spi_ll_freq_for_pre_n(int fapb, int pre, int n)
  *
  * @return           Actual (nearest) frequency.
  */
-static inline int spi_ll_master_cal_clock(int fapb, int hz, int duty_cycle, spi_ll_clock_val_t *out_reg)
+static inline int IRAM_ATTR spi_ll_master_cal_clock(int fapb, int hz, int duty_cycle, spi_ll_clock_val_t *out_reg)
 {
     typeof(GPSPI2.clock) reg;
     int eff_clk;
@@ -770,7 +770,7 @@ static inline int spi_ll_master_cal_clock(int fapb, int hz, int duty_cycle, spi_
  *
  * @return           Actual frequency that is used.
  */
-static inline int spi_ll_master_set_clock(spi_dev_t *hw, int fapb, int hz, int duty_cycle)
+static inline int IRAM_ATTR spi_ll_master_set_clock(spi_dev_t *hw, int fapb, int hz, int duty_cycle)
 {
     spi_ll_clock_val_t reg_val;
     int freq = spi_ll_master_cal_clock(fapb, hz, duty_cycle, &reg_val);
@@ -787,7 +787,7 @@ static inline int spi_ll_master_set_clock(spi_dev_t *hw, int fapb, int hz, int d
  * @param delay_mode Delay mode, see TRM.
  * @param delay_num  APB clocks to delay.
  */
-static inline void spi_ll_set_mosi_delay(spi_dev_t *hw, int delay_mode, int delay_num)
+static inline void IRAM_ATTR spi_ll_set_mosi_delay(spi_dev_t *hw, int delay_mode, int delay_num)
 {
 }
 
@@ -800,7 +800,7 @@ static inline void spi_ll_set_mosi_delay(spi_dev_t *hw, int delay_mode, int dela
  * @param delay_mode Delay mode, see TRM.
  * @param delay_num  APB clocks to delay.
  */
-static inline void spi_ll_set_miso_delay(spi_dev_t *hw, int delay_mode, int delay_num)
+static inline void IRAM_ATTR spi_ll_set_miso_delay(spi_dev_t *hw, int delay_mode, int delay_num)
 {
 }
 
@@ -810,7 +810,7 @@ static inline void spi_ll_set_miso_delay(spi_dev_t *hw, int delay_mode, int dela
  * @param hw   Beginning address of the peripheral registers.
  * @param hold Delay of SPI clocks after the last clock, 0 to disable the hold phase.
  */
-static inline void spi_ll_master_set_cs_hold(spi_dev_t *hw, int hold)
+static inline void IRAM_ATTR spi_ll_master_set_cs_hold(spi_dev_t *hw, int hold)
 {
     hw->user1.cs_hold_time = hold;
     hw->user.cs_hold = hold ? 1 : 0;
@@ -825,7 +825,7 @@ static inline void spi_ll_master_set_cs_hold(spi_dev_t *hw, int hold)
  * @param hw    Beginning address of the peripheral registers.
  * @param setup Delay of SPI clocks after the CS active edge, 0 to disable the setup phase.
  */
-static inline void spi_ll_master_set_cs_setup(spi_dev_t *hw, uint8_t setup)
+static inline void IRAM_ATTR spi_ll_master_set_cs_setup(spi_dev_t *hw, uint8_t setup)
 {
     hw->user1.cs_setup_time = setup - 1;
     hw->user.cs_setup = setup ? 1 : 0;
@@ -841,7 +841,7 @@ static inline void spi_ll_master_set_cs_setup(spi_dev_t *hw, uint8_t setup)
  * @param hw     Beginning address of the peripheral registers.
  * @param bitlen output length, in bits.
  */
-static inline void spi_ll_set_mosi_bitlen(spi_dev_t *hw, size_t bitlen)
+static inline void IRAM_ATTR spi_ll_set_mosi_bitlen(spi_dev_t *hw, size_t bitlen)
 {
     if (bitlen > 0) {
         hw->ms_dlen.ms_data_bitlen = bitlen - 1;
@@ -854,7 +854,7 @@ static inline void spi_ll_set_mosi_bitlen(spi_dev_t *hw, size_t bitlen)
  * @param hw     Beginning address of the peripheral registers.
  * @param bitlen input length, in bits.
  */
-static inline void spi_ll_set_miso_bitlen(spi_dev_t *hw, size_t bitlen)
+static inline void IRAM_ATTR spi_ll_set_miso_bitlen(spi_dev_t *hw, size_t bitlen)
 {
     if (bitlen > 0) {
         hw->ms_dlen.ms_data_bitlen = bitlen - 1;
@@ -867,7 +867,7 @@ static inline void spi_ll_set_miso_bitlen(spi_dev_t *hw, size_t bitlen)
  * @param hw     Beginning address of the peripheral registers.
  * @param bitlen Input length, in bits.
  */
-static inline void spi_ll_slave_set_rx_bitlen(spi_dev_t *hw, size_t bitlen)
+static inline void IRAM_ATTR spi_ll_slave_set_rx_bitlen(spi_dev_t *hw, size_t bitlen)
 {
     //This is not used in esp32s3
 }
@@ -892,7 +892,7 @@ static inline void spi_ll_slave_set_tx_bitlen(spi_dev_t *hw, size_t bitlen)
  * @param hw     Beginning address of the peripheral registers.
  * @param bitlen Length of command phase, in bits. 0 to disable the command phase.
  */
-static inline void spi_ll_set_command_bitlen(spi_dev_t *hw, int bitlen)
+static inline void IRAM_ATTR spi_ll_set_command_bitlen(spi_dev_t *hw, int bitlen)
 {
     hw->user2.usr_command_bitlen = bitlen - 1;
     hw->user.usr_command = bitlen ? 1 : 0;
@@ -907,7 +907,7 @@ static inline void spi_ll_set_command_bitlen(spi_dev_t *hw, int bitlen)
  * @param hw     Beginning address of the peripheral registers.
  * @param bitlen Length of address phase, in bits. 0 to disable the address phase.
  */
-static inline void spi_ll_set_addr_bitlen(spi_dev_t *hw, int bitlen)
+static inline void IRAM_ATTR spi_ll_set_addr_bitlen(spi_dev_t *hw, int bitlen)
 {
     hw->user1.usr_addr_bitlen = bitlen - 1;
     hw->user.usr_addr = bitlen ? 1 : 0;
@@ -923,7 +923,7 @@ static inline void spi_ll_set_addr_bitlen(spi_dev_t *hw, int bitlen)
  * @param addrlen  Length of the address phase
  * @param lsbfirst Whether the LSB first feature is enabled.
  */
-static inline void spi_ll_set_address(spi_dev_t *hw, uint64_t addr, int addrlen, uint32_t lsbfirst)
+static inline void IRAM_ATTR spi_ll_set_address(spi_dev_t *hw, uint64_t addr, int addrlen, uint32_t lsbfirst)
 {
     if (lsbfirst) {
         /* The output address start from the LSB of the highest byte, i.e.
@@ -952,7 +952,7 @@ static inline void spi_ll_set_address(spi_dev_t *hw, uint64_t addr, int addrlen,
  * @param addrlen  Length of the command phase
  * @param lsbfirst Whether the LSB first feature is enabled.
  */
-static inline void spi_ll_set_command(spi_dev_t *hw, uint16_t cmd, int cmdlen, bool lsbfirst)
+static inline void IRAM_ATTR spi_ll_set_command(spi_dev_t *hw, uint16_t cmd, int cmdlen, bool lsbfirst)
 {
     if (lsbfirst) {
         // The output command start from bit0 to bit 15, kept as is.
@@ -976,7 +976,7 @@ static inline void spi_ll_set_command(spi_dev_t *hw, uint16_t cmd, int cmdlen, b
  * @param hw      Beginning address of the peripheral registers.
  * @param dummy_n Dummy cycles used. 0 to disable the dummy phase.
  */
-static inline void spi_ll_set_dummy(spi_dev_t *hw, int dummy_n)
+static inline void IRAM_ATTR spi_ll_set_dummy(spi_dev_t *hw, int dummy_n)
 {
     hw->user.usr_dummy = dummy_n ? 1 : 0;
     HAL_FORCE_MODIFY_U32_REG_FIELD(hw->user1, usr_dummy_cyclelen, dummy_n - 1);
@@ -988,7 +988,7 @@ static inline void spi_ll_set_dummy(spi_dev_t *hw, int dummy_n)
  * @param hw     Beginning address of the peripheral registers.
  * @param enable True if RX phase exist, otherwise false.
  */
-static inline void spi_ll_enable_miso(spi_dev_t *hw, int enable)
+static inline void IRAM_ATTR spi_ll_enable_miso(spi_dev_t *hw, int enable)
 {
     hw->user.usr_miso = enable;
 }
@@ -999,7 +999,7 @@ static inline void spi_ll_enable_miso(spi_dev_t *hw, int enable)
  * @param hw     Beginning address of the peripheral registers.
  * @param enable True if TX phase exist, otherwise false.
  */
-static inline void spi_ll_enable_mosi(spi_dev_t *hw, int enable)
+static inline void IRAM_ATTR spi_ll_enable_mosi(spi_dev_t *hw, int enable)
 {
     hw->user.usr_mosi = enable;
 }
@@ -1011,7 +1011,7 @@ static inline void spi_ll_enable_mosi(spi_dev_t *hw, int enable)
  *
  * @return   Received bits of the slave.
  */
-static inline uint32_t spi_ll_slave_get_rcv_bitlen(spi_dev_t *hw)
+static inline uint32_t IRAM_ATTR spi_ll_slave_get_rcv_bitlen(spi_dev_t *hw)
 {
     return hw->slave1.data_bitlen;
 }
@@ -1034,35 +1034,35 @@ static inline uint32_t spi_ll_slave_get_rcv_bitlen(spi_dev_t *hw)
     item(SPI_LL_INTR_CMDA,          dma_int_ena.cmda,               dma_int_raw.cmda,               dma_int_clr.cmda,               dma_int_set.cmda_int_set)
 
 
-static inline void spi_ll_enable_intr(spi_dev_t *hw, spi_ll_intr_t intr_mask)
+static inline void IRAM_ATTR spi_ll_enable_intr(spi_dev_t *hw, spi_ll_intr_t intr_mask)
 {
 #define ENA_INTR(intr_bit, en_reg, ...) if (intr_mask & (intr_bit)) hw->en_reg = 1;
     FOR_EACH_ITEM(ENA_INTR, INTR_LIST);
 #undef ENA_INTR
 }
 
-static inline void spi_ll_disable_intr(spi_dev_t *hw, spi_ll_intr_t intr_mask)
+static inline void IRAM_ATTR spi_ll_disable_intr(spi_dev_t *hw, spi_ll_intr_t intr_mask)
 {
 #define DIS_INTR(intr_bit, en_reg, ...) if (intr_mask & (intr_bit)) hw->en_reg = 0;
     FOR_EACH_ITEM(DIS_INTR, INTR_LIST);
 #undef DIS_INTR
 }
 
-static inline void spi_ll_set_intr(spi_dev_t *hw, spi_ll_intr_t intr_mask)
+static inline void IRAM_ATTR spi_ll_set_intr(spi_dev_t *hw, spi_ll_intr_t intr_mask)
 {
 #define SET_INTR(intr_bit, _, __, ___, set_reg) if (intr_mask & (intr_bit)) hw->set_reg = 1;
     FOR_EACH_ITEM(SET_INTR, INTR_LIST);
 #undef SET_INTR
 }
 
-static inline void spi_ll_clear_intr(spi_dev_t *hw, spi_ll_intr_t intr_mask)
+static inline void IRAM_ATTR spi_ll_clear_intr(spi_dev_t *hw, spi_ll_intr_t intr_mask)
 {
 #define CLR_INTR(intr_bit, _, __, clr_reg, ...) if (intr_mask & (intr_bit)) hw->clr_reg = 1;
     FOR_EACH_ITEM(CLR_INTR, INTR_LIST);
 #undef CLR_INTR
 }
 
-static inline bool spi_ll_get_intr(spi_dev_t *hw, spi_ll_intr_t intr_mask)
+static inline bool IRAM_ATTR spi_ll_get_intr(spi_dev_t *hw, spi_ll_intr_t intr_mask)
 {
 #define GET_INTR(intr_bit, _, raw_reg, ...) if (intr_mask & (intr_bit) && hw->raw_reg) return true;
     FOR_EACH_ITEM(GET_INTR, INTR_LIST);
@@ -1078,7 +1078,7 @@ static inline bool spi_ll_get_intr(spi_dev_t *hw, spi_ll_intr_t intr_mask)
  *
  * @param hw Beginning address of the peripheral registers.
  */
-static inline void spi_ll_disable_int(spi_dev_t *hw)
+static inline void IRAM_ATTR spi_ll_disable_int(spi_dev_t *hw)
 {
     hw->dma_int_ena.trans_done = 0;
 }
@@ -1088,7 +1088,7 @@ static inline void spi_ll_disable_int(spi_dev_t *hw)
  *
  * @param hw Beginning address of the peripheral registers.
  */
-static inline void spi_ll_clear_int_stat(spi_dev_t *hw)
+static inline void IRAM_ATTR spi_ll_clear_int_stat(spi_dev_t *hw)
 {
     hw->dma_int_clr.trans_done = 1;
 }

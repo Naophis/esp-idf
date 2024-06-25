@@ -709,7 +709,7 @@ IRAM_ATTR esp_err_t spi_bus_lock_acquire_start(spi_bus_lock_dev_t *dev_handle, T
     spi_bus_lock_t* lock = dev_handle->parent;
 
     // Clear the semaphore before checking
-    dev_wait_prepare(dev_handle);
+    // dev_wait_prepare(dev_handle);
     if (!acquire_core(dev_handle)) {
         //block until becoming the acquiring processor (help by previous acquiring processor)
         esp_err_t err = dev_wait(dev_handle, wait);

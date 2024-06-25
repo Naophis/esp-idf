@@ -637,7 +637,7 @@ static void SPI_MASTER_ISR_ATTR spi_new_trans(spi_device_t *dev, spi_trans_priv_
     //Call pre-transmission callback, if any
     if (dev->cfg.pre_cb) dev->cfg.pre_cb(trans);
     //Kick off transfer
-    spi_hal_user_start(hal);
+    spi_hal_user_start(hal); //1usec
 }
 
 // The function is called when a transaction is done, in ISR or in the task.
@@ -759,13 +759,13 @@ static void SPI_MASTER_ISR_ATTR spi_intr(void *arg)
 static SPI_MASTER_ISR_ATTR esp_err_t check_trans_valid(spi_device_handle_t handle, spi_transaction_t *trans_desc)
 {
     // SPI_CHECK(handle!=NULL, "invalid dev handle", ESP_ERR_INVALID_ARG);
-    spi_host_t *host = handle->host;
-    const spi_bus_attr_t* bus_attr = host->bus_attr;
-    bool tx_enabled = (trans_desc->flags & SPI_TRANS_USE_TXDATA) || (trans_desc->tx_buffer);
-    bool rx_enabled = (trans_desc->flags & SPI_TRANS_USE_RXDATA) || (trans_desc->rx_buffer);
-    spi_transaction_ext_t *t_ext = (spi_transaction_ext_t *)trans_desc;
-    bool dummy_enabled = (((trans_desc->flags & SPI_TRANS_VARIABLE_DUMMY)? t_ext->dummy_bits: handle->cfg.dummy_bits) != 0);
-    bool extra_dummy_enabled = handle->hal_dev.timing_conf.timing_dummy;
+    // spi_host_t *host = handle->host;
+    // const spi_bus_attr_t* bus_attr = host->bus_attr;
+    // bool tx_enabled = (trans_desc->flags & SPI_TRANS_USE_TXDATA) || (trans_desc->tx_buffer);
+    // bool rx_enabled = (trans_desc->flags & SPI_TRANS_USE_RXDATA) || (trans_desc->rx_buffer);
+    // spi_transaction_ext_t *t_ext = (spi_transaction_ext_t *)trans_desc;
+    // bool dummy_enabled = (((trans_desc->flags & SPI_TRANS_VARIABLE_DUMMY)? t_ext->dummy_bits: handle->cfg.dummy_bits) != 0);
+    // bool extra_dummy_enabled = handle->hal_dev.timing_conf.timing_dummy;
     bool is_half_duplex = ((handle->cfg.flags & SPI_DEVICE_HALFDUPLEX) != 0);
 
     //check transmission length
@@ -803,13 +803,13 @@ static SPI_MASTER_ISR_ATTR esp_err_t check_trans_valid(spi_device_handle_t handl
     //Dummy phase is not available when both data out and in are enabled, regardless of FD or HD mode.
     // SPI_CHECK(!tx_enabled || !rx_enabled || !dummy_enabled || !extra_dummy_enabled, "Dummy phase is not available when both data out and in are enabled", ESP_ERR_INVALID_ARG);
 
-    if (bus_attr->dma_enabled) {
+    // if (bus_attr->dma_enabled) {
         // SPI_CHECK(trans_desc->length <= SPI_LL_DMA_MAX_BIT_LEN, "txdata transfer > hardware max supported len", ESP_ERR_INVALID_ARG);
         // SPI_CHECK(trans_desc->rxlength <= SPI_LL_DMA_MAX_BIT_LEN, "rxdata transfer > hardware max supported len", ESP_ERR_INVALID_ARG);
-    } else {
+    // } else {
         // SPI_CHECK(trans_desc->length <= SPI_LL_CPU_MAX_BIT_LEN, "txdata transfer > hardware max supported len", ESP_ERR_INVALID_ARG);
         // SPI_CHECK(trans_desc->rxlength <= SPI_LL_CPU_MAX_BIT_LEN, "rxdata transfer > hardware max supported len", ESP_ERR_INVALID_ARG);
-    }
+    // }
 
     return ESP_OK;
 }
@@ -887,7 +887,7 @@ esp_err_t SPI_MASTER_ATTR spi_device_queue_trans(spi_device_handle_t handle, spi
 
     spi_host_t *host = handle->host;
 
-    SPI_CHECK(!spi_bus_device_is_polling(handle), "Cannot queue new transaction while previous polling transaction is not terminated.", ESP_ERR_INVALID_STATE );
+    // SPI_CHECK(!spi_bus_device_is_polling(handle), "Cannot queue new transaction while previous polling transaction is not terminated.", ESP_ERR_INVALID_STATE );
 
     /* Even when using interrupt transfer, the CS can only be kept activated if the bus has been
      * acquired with `spi_device_acquire_bus()` first. */
@@ -1112,7 +1112,7 @@ esp_err_t SPI_MASTER_ISR_ATTR spi_device_polling_end(spi_device_handle_t handle,
 esp_err_t SPI_MASTER_ISR_ATTR spi_device_polling_transmit(spi_device_handle_t handle, spi_transaction_t* trans_desc)
 {
     esp_err_t ret;
-    ret = spi_device_polling_start(handle, trans_desc, portMAX_DELAY);
+    ret = spi_device_polling_start(handle, trans_desc, 0);
     if (ret != ESP_OK) return ret;
 
     return spi_device_polling_end(handle, portMAX_DELAY);
