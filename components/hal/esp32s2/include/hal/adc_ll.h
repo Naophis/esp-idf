@@ -594,8 +594,12 @@ static inline void adc_ll_set_sar_clk_div(adc_unit_t adc_n, uint32_t div)
  */
 static inline void adc_oneshot_ll_set_output_bits(adc_unit_t adc_n, adc_bitwidth_t bits)
 {
-    //ESP32S2 only supports 13bit, leave here for compatibility
-    HAL_ASSERT(bits == ADC_BITWIDTH_13 || bits == ADC_BITWIDTH_DEFAULT);
+    static bool is_initialized = false;
+    if (!is_initialized) {
+        is_initialized = true;
+        //ESP32S2 only supports 13bit, leave here for compatibility
+        HAL_ASSERT(bits == ADC_BITWIDTH_13 || bits == ADC_BITWIDTH_DEFAULT);
+    }
 }
 
 /**
@@ -678,7 +682,7 @@ static inline bool adc_oneshot_ll_get_event(uint32_t event)
     } else if (event == ADC_LL_EVENT_ADC2_ONESHOT_DONE) {
         ret = (bool)SENS.sar_meas2_ctrl2.meas2_done_sar;
     } else {
-        HAL_ASSERT(false);
+        // HAL_ASSERT(false);
     }
     return ret;
 }
@@ -927,18 +931,22 @@ static inline void adc_ll_set_controller(adc_unit_t adc_n, adc_ll_controller_t c
             break;
         }
     } else { // adc_n == ADC_UNIT_2
-        switch (ctrl) {
-        //If ADC2 is not controlled by ULP, the arbiter will decide which controller to use ADC2.
-        case ADC_LL_CTRL_ARB:
-            SENS.sar_meas2_ctrl2.meas2_start_force  = 1;    // 1: SW control RTC ADC start;     0: ULP control RTC ADC start.
-            SENS.sar_meas2_ctrl2.sar2_en_pad_force  = 1;    // 1: SW control RTC ADC bit map;   0: ULP control RTC ADC bit map;
-            break;
-        case ADC_LL_CTRL_ULP:
-            SENS.sar_meas2_ctrl2.meas2_start_force  = 0;    // 1: SW control RTC ADC start;     0: ULP control RTC ADC start.
-            SENS.sar_meas2_ctrl2.sar2_en_pad_force  = 0;    // 1: SW control RTC ADC bit map;   0: ULP control RTC ADC bit map;
-            break;
-        default:
-            break;
+        static bool is_initialized = false;
+        if (!is_initialized) {
+            is_initialized = true;
+            switch (ctrl) {
+            //If ADC2 is not controlled by ULP, the arbiter will decide which controller to use ADC2.
+            case ADC_LL_CTRL_ARB:
+                SENS.sar_meas2_ctrl2.meas2_start_force  = 1;    // 1: SW control RTC ADC start;     0: ULP control RTC ADC start.
+                SENS.sar_meas2_ctrl2.sar2_en_pad_force  = 1;    // 1: SW control RTC ADC bit map;   0: ULP control RTC ADC bit map;
+                break;
+            case ADC_LL_CTRL_ULP:
+                SENS.sar_meas2_ctrl2.meas2_start_force  = 0;    // 1: SW control RTC ADC start;     0: ULP control RTC ADC start.
+                SENS.sar_meas2_ctrl2.sar2_en_pad_force  = 0;    // 1: SW control RTC ADC bit map;   0: ULP control RTC ADC bit map;
+                break;
+            default:
+                break;
+            }
         }
     }
 }

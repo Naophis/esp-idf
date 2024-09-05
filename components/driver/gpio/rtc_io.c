@@ -21,6 +21,8 @@ static const char __attribute__((__unused__)) *RTCIO_TAG = "RTCIO";
 extern portMUX_TYPE rtc_spinlock; //TODO: Will be placed in the appropriate position after the rtc module is finished.
 #define RTCIO_ENTER_CRITICAL()  portENTER_CRITICAL(&rtc_spinlock)
 #define RTCIO_EXIT_CRITICAL()  portEXIT_CRITICAL(&rtc_spinlock)
+// #define RTCIO_ENTER_CRITICAL()  (void)(0)
+// #define RTCIO_EXIT_CRITICAL()  (void)(0)
 
 bool rtc_gpio_is_valid_gpio(gpio_num_t gpio_num)
 {

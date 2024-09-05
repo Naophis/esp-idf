@@ -36,16 +36,16 @@ void sar_periph_ctrl_init(void)
 
 void sar_periph_ctrl_power_enable(void)
 {
-    portENTER_CRITICAL_SAFE(&rtc_spinlock);
+    // portENTER_CRITICAL_SAFE(&rtc_spinlock);
     sar_ctrl_ll_set_power_mode(SAR_CTRL_LL_POWER_FSM);
-    portEXIT_CRITICAL_SAFE(&rtc_spinlock);
+    // portEXIT_CRITICAL_SAFE(&rtc_spinlock);
 }
 
 void sar_periph_ctrl_power_disable(void)
 {
-    portENTER_CRITICAL_SAFE(&rtc_spinlock);
+    // portENTER_CRITICAL_SAFE(&rtc_spinlock);
     sar_ctrl_ll_set_power_mode(SAR_CTRL_LL_POWER_OFF);
-    portEXIT_CRITICAL_SAFE(&rtc_spinlock);
+    // portEXIT_CRITICAL_SAFE(&rtc_spinlock);
 }
 
 /**
@@ -58,26 +58,26 @@ static int s_sar_power_on_cnt;
 
 static void s_sar_power_acquire(void)
 {
-    portENTER_CRITICAL_SAFE(&rtc_spinlock);
+    // portENTER_CRITICAL_SAFE(&rtc_spinlock);
     s_sar_power_on_cnt++;
     if (s_sar_power_on_cnt == 1) {
         sar_ctrl_ll_set_power_mode(SAR_CTRL_LL_POWER_ON);
     }
-    portEXIT_CRITICAL_SAFE(&rtc_spinlock);
+    // portEXIT_CRITICAL_SAFE(&rtc_spinlock);
 }
 
 static void s_sar_power_release(void)
 {
-    portENTER_CRITICAL_SAFE(&rtc_spinlock);
+    // portENTER_CRITICAL_SAFE(&rtc_spinlock);
     s_sar_power_on_cnt--;
     if (s_sar_power_on_cnt < 0) {
-        portEXIT_CRITICAL(&rtc_spinlock);
-        ESP_LOGE(TAG, "%s called, but s_sar_power_on_cnt == 0", __func__);
-        abort();
+        // portEXIT_CRITICAL(&rtc_spinlock);
+        // ESP_LOGE(TAG, "%s called, but s_sar_power_on_cnt == 0", __func__);
+        // abort();
     } else if (s_sar_power_on_cnt == 0) {
         sar_ctrl_ll_set_power_mode(SAR_CTRL_LL_POWER_FSM);
     }
-    portEXIT_CRITICAL_SAFE(&rtc_spinlock);
+    // portEXIT_CRITICAL_SAFE(&rtc_spinlock);
 }
 
 

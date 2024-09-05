@@ -46,8 +46,10 @@ static const char *ADC_TAG = "ADC";
 //////////////////////// Locks ///////////////////////////////////////////
 extern portMUX_TYPE rtc_spinlock; //TODO: Will be placed in the appropriate position after the rtc module is finished.
 
-#define RTC_ENTER_CRITICAL()    portENTER_CRITICAL(&rtc_spinlock)
-#define RTC_EXIT_CRITICAL()     portEXIT_CRITICAL(&rtc_spinlock)
+// #define RTC_ENTER_CRITICAL()    portENTER_CRITICAL(&rtc_spinlock)
+// #define RTC_EXIT_CRITICAL()     portEXIT_CRITICAL(&rtc_spinlock)
+#define RTC_ENTER_CRITICAL()    (void)(0)
+#define RTC_EXIT_CRITICAL()     (void)(0)
 #define DIGI_ENTER_CRITICAL()
 #define DIGI_EXIT_CRITICAL()
 
@@ -73,8 +75,10 @@ extern portMUX_TYPE rtc_spinlock; //TODO: Will be placed in the appropriate posi
 #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
 //prevent ADC1 being used by I2S dma and other tasks at the same time.
 static _lock_t adc1_dma_lock;
-#define SARADC1_ACQUIRE() _lock_acquire( &adc1_dma_lock )
-#define SARADC1_RELEASE() _lock_release( &adc1_dma_lock )
+// #define SARADC1_ACQUIRE() _lock_acquire( &adc1_dma_lock )
+// #define SARADC1_RELEASE() _lock_release( &adc1_dma_lock )
+#define SARADC1_ACQUIRE() (void)(0)
+#define SARADC1_RELEASE() (void)(0)
 #endif
 
 
@@ -110,7 +114,7 @@ static esp_err_t adc_hal_convert(adc_unit_t adc_n, int channel, uint32_t clk_src
 ---------------------------------------------------------------*/
 esp_err_t adc1_pad_get_io_num(adc1_channel_t channel, gpio_num_t *gpio_num)
 {
-    ESP_RETURN_ON_FALSE(channel < SOC_ADC_CHANNEL_NUM(ADC_UNIT_1), ESP_ERR_INVALID_ARG, ADC_TAG, "invalid channel");
+    // ESP_RETURN_ON_FALSE(channel < SOC_ADC_CHANNEL_NUM(ADC_UNIT_1), ESP_ERR_INVALID_ARG, ADC_TAG, "invalid channel");
 
     int io = ADC_GET_IO_NUM(ADC_UNIT_1, channel);
     if (io < 0) {
@@ -125,7 +129,7 @@ esp_err_t adc1_pad_get_io_num(adc1_channel_t channel, gpio_num_t *gpio_num)
 #if (SOC_ADC_PERIPH_NUM >= 2)
 esp_err_t adc2_pad_get_io_num(adc2_channel_t channel, gpio_num_t *gpio_num)
 {
-    ESP_RETURN_ON_FALSE(channel < SOC_ADC_CHANNEL_NUM(ADC_UNIT_2), ESP_ERR_INVALID_ARG, ADC_TAG, "invalid channel");
+    // ESP_RETURN_ON_FALSE(channel < SOC_ADC_CHANNEL_NUM(ADC_UNIT_2), ESP_ERR_INVALID_ARG, ADC_TAG, "invalid channel");
 
     int io = ADC_GET_IO_NUM(ADC_UNIT_2, channel);
     if (io < 0) {
@@ -172,7 +176,7 @@ static void adc_rtc_chan_init(adc_unit_t adc_unit)
 
 esp_err_t adc_common_gpio_init(adc_unit_t adc_unit, adc_channel_t channel)
 {
-    ESP_RETURN_ON_FALSE(channel < SOC_ADC_CHANNEL_NUM(adc_unit), ESP_ERR_INVALID_ARG, ADC_TAG, "invalid channel");
+    // ESP_RETURN_ON_FALSE(channel < SOC_ADC_CHANNEL_NUM(adc_unit), ESP_ERR_INVALID_ARG, ADC_TAG, "invalid channel");
 
     gpio_num_t gpio_num = 0;
     //If called with `ADC_UNIT_BOTH (ADC_UNIT_1 | ADC_UNIT_2)`, both if blocks will be run
@@ -185,10 +189,10 @@ esp_err_t adc_common_gpio_init(adc_unit_t adc_unit, adc_channel_t channel)
         return ESP_ERR_INVALID_ARG;
     }
 
-    ESP_RETURN_ON_ERROR(rtc_gpio_init(gpio_num), ADC_TAG, "rtc_gpio_init fail");
-    ESP_RETURN_ON_ERROR(rtc_gpio_set_direction(gpio_num, RTC_GPIO_MODE_DISABLED), ADC_TAG, "rtc_gpio_set_direction fail");
-    ESP_RETURN_ON_ERROR(rtc_gpio_pulldown_dis(gpio_num), ADC_TAG, "rtc_gpio_pulldown_dis fail");
-    ESP_RETURN_ON_ERROR(rtc_gpio_pullup_dis(gpio_num), ADC_TAG, "rtc_gpio_pullup_dis fail");
+    // ESP_RETURN_ON_ERROR(rtc_gpio_init(gpio_num), ADC_TAG, "rtc_gpio_init fail");
+    // ESP_RETURN_ON_ERROR(rtc_gpio_set_direction(gpio_num, RTC_GPIO_MODE_DISABLED), ADC_TAG, "rtc_gpio_set_direction fail");
+    // ESP_RETURN_ON_ERROR(rtc_gpio_pulldown_dis(gpio_num), ADC_TAG, "rtc_gpio_pulldown_dis fail");
+    // ESP_RETURN_ON_ERROR(rtc_gpio_pullup_dis(gpio_num), ADC_TAG, "rtc_gpio_pullup_dis fail");
 
     return ESP_OK;
 }
@@ -514,9 +518,9 @@ esp_err_t adc2_get_raw(adc2_channel_t channel, adc_bits_width_t width_bit, int *
     int adc_value = 0;
     adc_bitwidth_t bitwidth = 0;
 
-    ESP_RETURN_ON_FALSE(raw_out != NULL, ESP_ERR_INVALID_ARG, ADC_TAG, "ADC out value err");
-    ESP_RETURN_ON_FALSE(channel < ADC2_CHANNEL_MAX, ESP_ERR_INVALID_ARG, ADC_TAG, "ADC Channel Err");
-    ESP_RETURN_ON_FALSE(width_bit < ADC_WIDTH_MAX, ESP_ERR_INVALID_ARG, ADC_TAG, "unsupported bit width");
+    // ESP_RETURN_ON_FALSE(raw_out != NULL, ESP_ERR_INVALID_ARG, ADC_TAG, "ADC out value err");
+    // ESP_RETURN_ON_FALSE(channel < ADC2_CHANNEL_MAX, ESP_ERR_INVALID_ARG, ADC_TAG, "ADC Channel Err");
+    // ESP_RETURN_ON_FALSE(width_bit < ADC_WIDTH_MAX, ESP_ERR_INVALID_ARG, ADC_TAG, "unsupported bit width");
 #if CONFIG_IDF_TARGET_ESP32
     if ((uint32_t)width_bit == (uint32_t)ADC_BITWIDTH_DEFAULT) {
         bitwidth = SOC_ADC_RTC_MAX_BITWIDTH;
@@ -564,15 +568,18 @@ esp_err_t adc2_get_raw(adc2_channel_t channel, adc_bits_width_t width_bit, int *
 
 #if SOC_ADC_ARBITER_SUPPORTED
     adc_arbiter_t config = ADC_ARBITER_CONFIG_DEFAULT();
+    // exec once
     adc_hal_arbiter_config(&config);
 #endif
 
 #ifdef CONFIG_ADC_DISABLE_DAC
     adc2_dac_disable(channel);      //disable other peripherals
 #endif
+    //exec once
     adc_oneshot_ll_set_output_bits(ADC_UNIT_2, bitwidth);
 
 #if CONFIG_IDF_TARGET_ESP32
+    // exec once
     adc_ll_set_controller(ADC_UNIT_2, ADC_LL_CTRL_RTC);// set controller
 #else
     adc_ll_set_controller(ADC_UNIT_2, ADC_LL_CTRL_ARB);// set controller
@@ -603,9 +610,9 @@ esp_err_t adc2_get_raw(adc2_channel_t channel, adc_bits_width_t width_bit, int *
     SARADC2_EXIT();
 
     sar_periph_ctrl_adc_oneshot_power_release();
-#if CONFIG_IDF_TARGET_ESP32
-    adc_lock_release(ADC_UNIT_2);
-#endif
+// #if CONFIG_IDF_TARGET_ESP32
+//     adc_lock_release(ADC_UNIT_2);
+// #endif
 
     *raw_out = adc_value;
     return ret;
@@ -894,8 +901,8 @@ static esp_err_t adc_hal_convert(adc_unit_t adc_n, int channel, uint32_t clk_src
 {
 
     uint32_t event = (adc_n == ADC_UNIT_1) ? ADC_LL_EVENT_ADC1_ONESHOT_DONE : ADC_LL_EVENT_ADC2_ONESHOT_DONE;
-    adc_oneshot_ll_clear_event(event);
-    adc_oneshot_ll_disable_all_unit();
+    // adc_oneshot_ll_clear_event(event);
+    // adc_oneshot_ll_disable_all_unit();
     adc_oneshot_ll_enable(adc_n);
     adc_oneshot_ll_set_channel(adc_n, channel);
 
@@ -911,7 +918,7 @@ static esp_err_t adc_hal_convert(adc_unit_t adc_n, int channel, uint32_t clk_src
     }
 
     //HW workaround: when enabling periph clock, this should be false
-    adc_oneshot_ll_disable_all_unit();
+    // adc_oneshot_ll_disable_all_unit();
 
     return ESP_OK;
 }
@@ -926,10 +933,10 @@ static void check_adc_oneshot_driver_conflict(void)
     // So if adc_oneshot driver is not linked in, then `adc_oneshot_new_unit` should be NULL at runtime.
     extern __attribute__((weak)) esp_err_t adc_oneshot_new_unit(const void *init_config, void **ret_unit);
     if ((void *)adc_oneshot_new_unit != NULL) {
-        ESP_EARLY_LOGE(ADC_TAG, "CONFLICT! driver_ng is not allowed to be used with the legacy driver");
+        // ESP_EARLY_LOGE(ADC_TAG, "CONFLICT! driver_ng is not allowed to be used with the legacy driver");
         abort();
     }
-    ESP_EARLY_LOGW(ADC_TAG, "legacy driver is deprecated, please migrate to `esp_adc/adc_oneshot.h`");
+    // ESP_EARLY_LOGW(ADC_TAG, "legacy driver is deprecated, please migrate to `esp_adc/adc_oneshot.h`");
 }
 
 #if SOC_ADC_CALIBRATION_V1_SUPPORTED

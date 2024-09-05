@@ -74,8 +74,12 @@ void adc_hal_set_controller(adc_unit_t unit, adc_hal_work_mode_t work_mode)
 #if SOC_ADC_ARBITER_SUPPORTED
 void adc_hal_arbiter_config(adc_arbiter_t *config)
 {
-    adc_ll_set_arbiter_work_mode(config->mode);
-    adc_ll_set_arbiter_priority(config->rtc_pri, config->dig_pri, config->pwdet_pri);
+    static bool is_initialized = false;
+    if (!is_initialized) {
+        is_initialized = true;
+        adc_ll_set_arbiter_work_mode(config->mode);
+        adc_ll_set_arbiter_priority(config->rtc_pri, config->dig_pri, config->pwdet_pri);
+    }
 }
 #endif  // #if SOC_ADC_ARBITER_SUPPORTED
 
