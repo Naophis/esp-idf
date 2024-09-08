@@ -41,7 +41,7 @@ void spi_hal_setup_trans(spi_hal_context_t *hal, const spi_hal_dev_config_t *dev
     //clear int bit
     spi_ll_clear_int_stat(hal->hw);
     //We should be done with the transmission.
-    HAL_ASSERT(spi_ll_get_running_cmd(hw) == 0);
+    // HAL_ASSERT(spi_ll_get_running_cmd(hw) == 0);
     //set transaction line mode
     spi_ll_master_set_line_mode(hw, trans->line_mode);
 

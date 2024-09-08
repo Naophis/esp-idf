@@ -129,7 +129,7 @@ static bool claim_dma_chan(int dma_chan, uint32_t *out_actual_dma_chan)
 {
     bool ret = false;
 
-    portENTER_CRITICAL(&spi_dma_spinlock);
+    // portENTER_CRITICAL(&spi_dma_spinlock);
     bool is_used = (BIT(dma_chan) & spi_dma_chan_enabled);
     if (!is_used) {
         spi_dma_chan_enabled |= BIT(dma_chan);
@@ -151,7 +151,7 @@ static bool claim_dma_chan(int dma_chan, uint32_t *out_actual_dma_chan)
         *out_actual_dma_chan = dma_chan;
         ret = true;
     }
-    portEXIT_CRITICAL(&spi_dma_spinlock);
+    // portEXIT_CRITICAL(&spi_dma_spinlock);
 
     return ret;
 }
@@ -354,7 +354,7 @@ esp_err_t spicommon_dma_chan_free(spi_dma_ctx_t *dma_ctx)
     int dma_chan = dma_ctx->tx_dma_chan.chan_id;
     assert(spi_dma_chan_enabled & BIT(dma_chan));
 
-    portENTER_CRITICAL(&spi_dma_spinlock);
+    // portENTER_CRITICAL(&spi_dma_spinlock);
     spi_dma_chan_enabled &= ~BIT(dma_chan);
 #if SPI_LL_DMA_SHARED
     PERIPH_RCC_RELEASE_ATOMIC(get_dma_periph(dma_chan), ref_count) {
@@ -367,7 +367,7 @@ esp_err_t spicommon_dma_chan_free(spi_dma_ctx_t *dma_ctx)
         spi_dma_ll_enable_bus_clock(dma_ctx->tx_dma_chan.host_id, false);
     }
 #endif
-    portEXIT_CRITICAL(&spi_dma_spinlock);
+    // portEXIT_CRITICAL(&spi_dma_spinlock);
 
 #else //SOC_GDMA_SUPPORTED
     if (dma_ctx->rx_dma_chan) {

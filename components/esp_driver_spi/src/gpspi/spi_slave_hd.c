@@ -300,16 +300,16 @@ esp_err_t spi_slave_hd_deinit(spi_host_device_t host_id)
 
 static void tx_invoke(spi_slave_hd_slot_t *host)
 {
-    portENTER_CRITICAL(&host->int_spinlock);
+    // portENTER_CRITICAL(&host->int_spinlock);
     spi_slave_hd_hal_invoke_event_intr(&host->hal, SPI_EV_SEND);
-    portEXIT_CRITICAL(&host->int_spinlock);
+    // portEXIT_CRITICAL(&host->int_spinlock);
 }
 
 static void rx_invoke(spi_slave_hd_slot_t *host)
 {
-    portENTER_CRITICAL(&host->int_spinlock);
+    // portENTER_CRITICAL(&host->int_spinlock);
     spi_slave_hd_hal_invoke_event_intr(&host->hal, SPI_EV_RECV);
-    portEXIT_CRITICAL(&host->int_spinlock);
+    // portEXIT_CRITICAL(&host->int_spinlock);
 }
 
 static inline IRAM_ATTR BaseType_t intr_check_clear_callback(spi_slave_hd_slot_t *host, spi_event_t ev, slave_cb_t cb)
@@ -338,12 +338,12 @@ static IRAM_ATTR void spi_slave_hd_intr_segment(void *arg)
     bool tx_done = false, rx_done = false;
     bool tx_event = false, rx_event = false;
 
-    portENTER_CRITICAL_ISR(&host->int_spinlock);
+    // portENTER_CRITICAL_ISR(&host->int_spinlock);
     tx_event = spi_slave_hd_hal_check_disable_event(hal, SPI_EV_SEND);
     rx_event = spi_slave_hd_hal_check_disable_event(hal, SPI_EV_RECV);
     tx_done = host->tx_curr_trans.trans && tx_event;
     rx_done = host->rx_curr_trans.trans && rx_event;
-    portEXIT_CRITICAL_ISR(&host->int_spinlock);
+    // portEXIT_CRITICAL_ISR(&host->int_spinlock);
 
     if (tx_done) {
         bool ret_queue = true;
@@ -424,14 +424,14 @@ static IRAM_ATTR void spi_slave_hd_intr_segment(void *arg)
         }
     }
 
-    portENTER_CRITICAL_ISR(&host->int_spinlock);
+    // portENTER_CRITICAL_ISR(&host->int_spinlock);
     if (tx_sent) {
         spi_slave_hd_hal_enable_event_intr(hal, SPI_EV_SEND);
     }
     if (rx_sent) {
         spi_slave_hd_hal_enable_event_intr(hal, SPI_EV_RECV);
     }
-    portEXIT_CRITICAL_ISR(&host->int_spinlock);
+    // portEXIT_CRITICAL_ISR(&host->int_spinlock);
 
     if (awoken == pdTRUE) {
         portYIELD_FROM_ISR();
@@ -544,7 +544,7 @@ static IRAM_ATTR void spi_slave_hd_intr_append(void *arg)
     bool tx_done = false;
 
     // Append Mode
-    portENTER_CRITICAL_ISR(&host->int_spinlock);
+    // portENTER_CRITICAL_ISR(&host->int_spinlock);
     if (spi_slave_hd_hal_check_clear_event(hal, SPI_EV_RECV)) {
         rx_done = true;
     }
@@ -553,7 +553,7 @@ static IRAM_ATTR void spi_slave_hd_intr_append(void *arg)
         // otherwise, here should be target limited.
         tx_done = true;
     }
-    portEXIT_CRITICAL_ISR(&host->int_spinlock);
+    // portEXIT_CRITICAL_ISR(&host->int_spinlock);
 
     if (rx_done) {
         spi_slave_hd_append_rx_isr(arg);

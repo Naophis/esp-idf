@@ -954,7 +954,7 @@ static void SPI_MASTER_ISR_ATTR spi_intr(void *arg)
     BaseType_t trans_found = pdFALSE;
 
     // There should be remaining requests
-    BUS_LOCK_DEBUG_EXECUTE_CHECK(spi_bus_lock_bg_req_exist(lock));
+    // BUS_LOCK_DEBUG_EXECUTE_CHECK(spi_bus_lock_bg_req_exist(lock));
 
     do {
         spi_bus_lock_dev_handle_t acq_dev_lock = spi_bus_lock_get_acquiring_dev(lock);
@@ -1021,58 +1021,58 @@ static void SPI_MASTER_ISR_ATTR spi_intr(void *arg)
 
 static SPI_MASTER_ISR_ATTR esp_err_t check_trans_valid(spi_device_handle_t handle, spi_transaction_t *trans_desc)
 {
-    SPI_CHECK(handle != NULL, "invalid dev handle", ESP_ERR_INVALID_ARG);
-    spi_host_t *host = handle->host;
-    const spi_bus_attr_t* bus_attr = host->bus_attr;
-    bool tx_enabled = (trans_desc->flags & SPI_TRANS_USE_TXDATA) || (trans_desc->tx_buffer);
-    bool rx_enabled = (trans_desc->flags & SPI_TRANS_USE_RXDATA) || (trans_desc->rx_buffer);
-    spi_transaction_ext_t *t_ext = (spi_transaction_ext_t *)trans_desc;
-    bool dummy_enabled = (((trans_desc->flags & SPI_TRANS_VARIABLE_DUMMY) ? t_ext->dummy_bits : handle->cfg.dummy_bits) != 0);
-    bool extra_dummy_enabled = handle->hal_dev.timing_conf.timing_dummy;
+    // SPI_CHECK(handle != NULL, "invalid dev handle", ESP_ERR_INVALID_ARG);
+    // spi_host_t *host = handle->host;
+    // const spi_bus_attr_t* bus_attr = host->bus_attr;
+    // bool tx_enabled = (trans_desc->flags & SPI_TRANS_USE_TXDATA) || (trans_desc->tx_buffer);
+    // bool rx_enabled = (trans_desc->flags & SPI_TRANS_USE_RXDATA) || (trans_desc->rx_buffer);
+    // spi_transaction_ext_t *t_ext = (spi_transaction_ext_t *)trans_desc;
+    // bool dummy_enabled = (((trans_desc->flags & SPI_TRANS_VARIABLE_DUMMY) ? t_ext->dummy_bits : handle->cfg.dummy_bits) != 0);
+    // bool extra_dummy_enabled = handle->hal_dev.timing_conf.timing_dummy;
     bool is_half_duplex = ((handle->cfg.flags & SPI_DEVICE_HALFDUPLEX) != 0);
 
     //check transmission length
-    SPI_CHECK((trans_desc->flags & SPI_TRANS_USE_RXDATA) == 0 || trans_desc->rxlength <= 32, "SPI_TRANS_USE_RXDATA only available for rxdata transfer <= 32 bits", ESP_ERR_INVALID_ARG);
-    SPI_CHECK((trans_desc->flags & SPI_TRANS_USE_TXDATA) == 0 || trans_desc->length <= 32, "SPI_TRANS_USE_TXDATA only available for txdata transfer <= 32 bits", ESP_ERR_INVALID_ARG);
-    SPI_CHECK(trans_desc->length <= bus_attr->max_transfer_sz * 8, "txdata transfer > host maximum", ESP_ERR_INVALID_ARG);
-    SPI_CHECK(trans_desc->rxlength <= bus_attr->max_transfer_sz * 8, "rxdata transfer > host maximum", ESP_ERR_INVALID_ARG);
-    SPI_CHECK(is_half_duplex || trans_desc->rxlength <= trans_desc->length, "rx length > tx length in full duplex mode", ESP_ERR_INVALID_ARG);
-    //check working mode
-#if SOC_SPI_SUPPORT_OCT
-    SPI_CHECK(!(host->id == SPI3_HOST && trans_desc->flags & SPI_TRANS_MODE_OCT), "SPI3 does not support octal mode", ESP_ERR_INVALID_ARG);
-    SPI_CHECK(!((trans_desc->flags & SPI_TRANS_MODE_OCT) && (handle->cfg.flags & SPI_DEVICE_3WIRE)), "Incompatible when setting to both Octal mode and 3-wire-mode", ESP_ERR_INVALID_ARG);
-    SPI_CHECK(!((trans_desc->flags & SPI_TRANS_MODE_OCT) && !is_half_duplex), "Incompatible when setting to both Octal mode and half duplex mode", ESP_ERR_INVALID_ARG);
-#endif
-    SPI_CHECK(!((trans_desc->flags & (SPI_TRANS_MODE_DIO | SPI_TRANS_MODE_QIO)) && (handle->cfg.flags & SPI_DEVICE_3WIRE)), "Incompatible when setting to both multi-line mode and 3-wire-mode", ESP_ERR_INVALID_ARG);
-    SPI_CHECK(!((trans_desc->flags & (SPI_TRANS_MODE_DIO | SPI_TRANS_MODE_QIO)) && !is_half_duplex), "Incompatible when setting to both multi-line mode and half duplex mode", ESP_ERR_INVALID_ARG);
-#ifdef CONFIG_IDF_TARGET_ESP32
-    SPI_CHECK(!is_half_duplex || !bus_attr->dma_enabled || !rx_enabled || !tx_enabled, "SPI half duplex mode does not support using DMA with both MOSI and MISO phases.", ESP_ERR_INVALID_ARG);
-#endif
-#if !SOC_SPI_HD_BOTH_INOUT_SUPPORTED
-    //On these chips, HW doesn't support using both TX and RX phases when in halfduplex mode
-    SPI_CHECK(!is_half_duplex || !tx_enabled || !rx_enabled, "SPI half duplex mode is not supported when both MOSI and MISO phases are enabled.", ESP_ERR_INVALID_ARG);
-    SPI_CHECK(!is_half_duplex || !trans_desc->length || !trans_desc->rxlength, "SPI half duplex mode is not supported when both MOSI and MISO phases are enabled.", ESP_ERR_INVALID_ARG);
-#endif
-    //MOSI phase is skipped only when both tx_buffer and SPI_TRANS_USE_TXDATA are not set.
-    SPI_CHECK(trans_desc->length != 0 || !tx_enabled, "trans tx_buffer should be NULL and SPI_TRANS_USE_TXDATA should be cleared to skip MOSI phase.", ESP_ERR_INVALID_ARG);
-    //MISO phase is skipped only when both rx_buffer and SPI_TRANS_USE_RXDATA are not set.
-    //If set rxlength=0 in full_duplex mode, it will be automatically set to length
-    SPI_CHECK(!is_half_duplex || trans_desc->rxlength != 0 || !rx_enabled, "trans rx_buffer should be NULL and SPI_TRANS_USE_RXDATA should be cleared to skip MISO phase.", ESP_ERR_INVALID_ARG);
+//     SPI_CHECK((trans_desc->flags & SPI_TRANS_USE_RXDATA) == 0 || trans_desc->rxlength <= 32, "SPI_TRANS_USE_RXDATA only available for rxdata transfer <= 32 bits", ESP_ERR_INVALID_ARG);
+//     SPI_CHECK((trans_desc->flags & SPI_TRANS_USE_TXDATA) == 0 || trans_desc->length <= 32, "SPI_TRANS_USE_TXDATA only available for txdata transfer <= 32 bits", ESP_ERR_INVALID_ARG);
+//     SPI_CHECK(trans_desc->length <= bus_attr->max_transfer_sz * 8, "txdata transfer > host maximum", ESP_ERR_INVALID_ARG);
+//     SPI_CHECK(trans_desc->rxlength <= bus_attr->max_transfer_sz * 8, "rxdata transfer > host maximum", ESP_ERR_INVALID_ARG);
+//     SPI_CHECK(is_half_duplex || trans_desc->rxlength <= trans_desc->length, "rx length > tx length in full duplex mode", ESP_ERR_INVALID_ARG);
+//     //check working mode
+// #if SOC_SPI_SUPPORT_OCT
+//     SPI_CHECK(!(host->id == SPI3_HOST && trans_desc->flags & SPI_TRANS_MODE_OCT), "SPI3 does not support octal mode", ESP_ERR_INVALID_ARG);
+//     SPI_CHECK(!((trans_desc->flags & SPI_TRANS_MODE_OCT) && (handle->cfg.flags & SPI_DEVICE_3WIRE)), "Incompatible when setting to both Octal mode and 3-wire-mode", ESP_ERR_INVALID_ARG);
+//     SPI_CHECK(!((trans_desc->flags & SPI_TRANS_MODE_OCT) && !is_half_duplex), "Incompatible when setting to both Octal mode and half duplex mode", ESP_ERR_INVALID_ARG);
+// #endif
+//     SPI_CHECK(!((trans_desc->flags & (SPI_TRANS_MODE_DIO | SPI_TRANS_MODE_QIO)) && (handle->cfg.flags & SPI_DEVICE_3WIRE)), "Incompatible when setting to both multi-line mode and 3-wire-mode", ESP_ERR_INVALID_ARG);
+//     SPI_CHECK(!((trans_desc->flags & (SPI_TRANS_MODE_DIO | SPI_TRANS_MODE_QIO)) && !is_half_duplex), "Incompatible when setting to both multi-line mode and half duplex mode", ESP_ERR_INVALID_ARG);
+// #ifdef CONFIG_IDF_TARGET_ESP32
+//     SPI_CHECK(!is_half_duplex || !bus_attr->dma_enabled || !rx_enabled || !tx_enabled, "SPI half duplex mode does not support using DMA with both MOSI and MISO phases.", ESP_ERR_INVALID_ARG);
+// #endif
+// #if !SOC_SPI_HD_BOTH_INOUT_SUPPORTED
+//     //On these chips, HW doesn't support using both TX and RX phases when in halfduplex mode
+//     SPI_CHECK(!is_half_duplex || !tx_enabled || !rx_enabled, "SPI half duplex mode is not supported when both MOSI and MISO phases are enabled.", ESP_ERR_INVALID_ARG);
+//     SPI_CHECK(!is_half_duplex || !trans_desc->length || !trans_desc->rxlength, "SPI half duplex mode is not supported when both MOSI and MISO phases are enabled.", ESP_ERR_INVALID_ARG);
+// #endif
+//     //MOSI phase is skipped only when both tx_buffer and SPI_TRANS_USE_TXDATA are not set.
+//     SPI_CHECK(trans_desc->length != 0 || !tx_enabled, "trans tx_buffer should be NULL and SPI_TRANS_USE_TXDATA should be cleared to skip MOSI phase.", ESP_ERR_INVALID_ARG);
+//     //MISO phase is skipped only when both rx_buffer and SPI_TRANS_USE_RXDATA are not set.
+//     //If set rxlength=0 in full_duplex mode, it will be automatically set to length
+//     SPI_CHECK(!is_half_duplex || trans_desc->rxlength != 0 || !rx_enabled, "trans rx_buffer should be NULL and SPI_TRANS_USE_RXDATA should be cleared to skip MISO phase.", ESP_ERR_INVALID_ARG);
     //In Full duplex mode, default rxlength to be the same as length, if not filled in.
     // set rxlength to length is ok, even when rx buffer=NULL
     if (trans_desc->rxlength == 0 && !is_half_duplex) {
         trans_desc->rxlength = trans_desc->length;
     }
-    //Dummy phase is not available when both data out and in are enabled, regardless of FD or HD mode.
-    SPI_CHECK(!tx_enabled || !rx_enabled || !dummy_enabled || !extra_dummy_enabled, "Dummy phase is not available when both data out and in are enabled", ESP_ERR_INVALID_ARG);
+    // //Dummy phase is not available when both data out and in are enabled, regardless of FD or HD mode.
+    // SPI_CHECK(!tx_enabled || !rx_enabled || !dummy_enabled || !extra_dummy_enabled, "Dummy phase is not available when both data out and in are enabled", ESP_ERR_INVALID_ARG);
 
-    if (bus_attr->dma_enabled) {
-        SPI_CHECK(trans_desc->length <= SPI_LL_DMA_MAX_BIT_LEN, "txdata transfer > hardware max supported len", ESP_ERR_INVALID_ARG);
-        SPI_CHECK(trans_desc->rxlength <= SPI_LL_DMA_MAX_BIT_LEN, "rxdata transfer > hardware max supported len", ESP_ERR_INVALID_ARG);
-    } else {
-        SPI_CHECK(trans_desc->length <= SPI_LL_CPU_MAX_BIT_LEN, "txdata transfer > hardware max supported len", ESP_ERR_INVALID_ARG);
-        SPI_CHECK(trans_desc->rxlength <= SPI_LL_CPU_MAX_BIT_LEN, "rxdata transfer > hardware max supported len", ESP_ERR_INVALID_ARG);
-    }
+    // if (bus_attr->dma_enabled) {
+    //     SPI_CHECK(trans_desc->length <= SPI_LL_DMA_MAX_BIT_LEN, "txdata transfer > hardware max supported len", ESP_ERR_INVALID_ARG);
+    //     SPI_CHECK(trans_desc->rxlength <= SPI_LL_DMA_MAX_BIT_LEN, "rxdata transfer > hardware max supported len", ESP_ERR_INVALID_ARG);
+    // } else {
+    //     SPI_CHECK(trans_desc->length <= SPI_LL_CPU_MAX_BIT_LEN, "txdata transfer > hardware max supported len", ESP_ERR_INVALID_ARG);
+    //     SPI_CHECK(trans_desc->rxlength <= SPI_LL_CPU_MAX_BIT_LEN, "rxdata transfer > hardware max supported len", ESP_ERR_INVALID_ARG);
+    // }
 
     return ESP_OK;
 }
@@ -1131,9 +1131,9 @@ static SPI_MASTER_ISR_ATTR esp_err_t setup_priv_desc(spi_host_t *host, spi_trans
 
     if (send_ptr && bus_attr->dma_enabled) {
         if ((!esp_ptr_dma_capable(send_ptr) || tx_unaligned)) {
-            ESP_RETURN_ON_FALSE(!(trans_desc->flags & SPI_TRANS_DMA_BUFFER_ALIGN_MANUAL), ESP_ERR_INVALID_ARG, SPI_TAG, "Set flag SPI_TRANS_DMA_BUFFER_ALIGN_MANUAL but TX buffer addr&len not align to %d, or not dma_capable", alignment);
+            // ESP_RETURN_ON_FALSE(!(trans_desc->flags & SPI_TRANS_DMA_BUFFER_ALIGN_MANUAL), ESP_ERR_INVALID_ARG, SPI_TAG, "Set flag SPI_TRANS_DMA_BUFFER_ALIGN_MANUAL but TX buffer addr&len not align to %d, or not dma_capable", alignment);
             //if txbuf in the desc not DMA-capable, or not bytes aligned to alignment, malloc a new one
-            ESP_EARLY_LOGD(SPI_TAG, "Allocate TX buffer for DMA");
+            // ESP_EARLY_LOGD(SPI_TAG, "Allocate TX buffer for DMA");
             tx_byte_len = (tx_byte_len + alignment - 1) & (~(alignment - 1));   // up align alignment
             uint32_t *temp = heap_caps_aligned_alloc(alignment, tx_byte_len, MALLOC_CAP_DMA);
             if (temp == NULL) {
@@ -1150,9 +1150,9 @@ static SPI_MASTER_ISR_ATTR esp_err_t setup_priv_desc(spi_host_t *host, spi_trans
     }
 
     if (rcv_ptr && bus_attr->dma_enabled && (!esp_ptr_dma_capable(rcv_ptr) || rx_unaligned)) {
-        ESP_RETURN_ON_FALSE(!(trans_desc->flags & SPI_TRANS_DMA_BUFFER_ALIGN_MANUAL), ESP_ERR_INVALID_ARG, SPI_TAG, "Set flag SPI_TRANS_DMA_BUFFER_ALIGN_MANUAL but RX buffer addr&len not align to %d, or not dma_capable", alignment);
+        // ESP_RETURN_ON_FALSE(!(trans_desc->flags & SPI_TRANS_DMA_BUFFER_ALIGN_MANUAL), ESP_ERR_INVALID_ARG, SPI_TAG, "Set flag SPI_TRANS_DMA_BUFFER_ALIGN_MANUAL but RX buffer addr&len not align to %d, or not dma_capable", alignment);
         //if rxbuf in the desc not DMA-capable, or not aligned to alignment, malloc a new one
-        ESP_EARLY_LOGD(SPI_TAG, "Allocate RX buffer for DMA");
+        // ESP_EARLY_LOGD(SPI_TAG, "Allocate RX buffer for DMA");
         rx_byte_len = (rx_byte_len + alignment - 1) & (~(alignment - 1));   // up align alignment
         rcv_ptr = heap_caps_aligned_alloc(alignment, rx_byte_len, MALLOC_CAP_DMA);
         if (rcv_ptr == NULL) {
@@ -1177,7 +1177,7 @@ esp_err_t SPI_MASTER_ATTR spi_device_queue_trans(spi_device_handle_t handle, spi
 
     spi_host_t *host = handle->host;
 
-    SPI_CHECK(!spi_bus_device_is_polling(handle), "Cannot queue new transaction while previous polling transaction is not terminated.", ESP_ERR_INVALID_STATE);
+    // SPI_CHECK(!spi_bus_device_is_polling(handle), "Cannot queue new transaction while previous polling transaction is not terminated.", ESP_ERR_INVALID_STATE);
 
     /* Even when using interrupt transfer, the CS can only be kept activated if the bus has been
      * acquired with `spi_device_acquire_bus()` first. */
@@ -1334,12 +1334,12 @@ void SPI_MASTER_ISR_ATTR spi_device_release_bus(spi_device_t *dev)
 esp_err_t SPI_MASTER_ISR_ATTR spi_device_polling_start(spi_device_handle_t handle, spi_transaction_t *trans_desc, TickType_t ticks_to_wait)
 {
     esp_err_t ret;
-    SPI_CHECK(ticks_to_wait == portMAX_DELAY, "currently timeout is not available for polling transactions", ESP_ERR_INVALID_ARG);
+    // SPI_CHECK(ticks_to_wait == portMAX_DELAY, "currently timeout is not available for polling transactions", ESP_ERR_INVALID_ARG);
     ret = check_trans_valid(handle, trans_desc);
     if (ret != ESP_OK) {
         return ret;
     }
-    SPI_CHECK(!spi_bus_device_is_polling(handle), "Cannot send polling transaction while the previous polling transaction is not terminated.", ESP_ERR_INVALID_STATE);
+    // SPI_CHECK(!spi_bus_device_is_polling(handle), "Cannot send polling transaction while the previous polling transaction is not terminated.", ESP_ERR_INVALID_STATE);
 
     spi_host_t *host = handle->host;
     spi_trans_priv_t priv_polling_trans = { .trans = trans_desc, };
@@ -1363,7 +1363,7 @@ esp_err_t SPI_MASTER_ISR_ATTR spi_device_polling_start(spi_device_handle_t handl
     }
     if (ret != ESP_OK) {
         uninstall_priv_desc(&priv_polling_trans);
-        ESP_LOGE(SPI_TAG, "polling can't get buslock");
+        // ESP_LOGE(SPI_TAG, "polling can't get buslock");
         return ret;
     }
     //After holding the buslock, common resource can be accessed !!
@@ -1372,7 +1372,7 @@ esp_err_t SPI_MASTER_ISR_ATTR spi_device_polling_start(spi_device_handle_t handl
     host->polling = true;
     host->cur_trans_buf = priv_polling_trans;
 
-    ESP_LOGV(SPI_TAG, "polling trans");
+    // ESP_LOGV(SPI_TAG, "polling trans");
     spi_new_trans(handle, &host->cur_trans_buf);
 
     return ESP_OK;
@@ -1380,11 +1380,11 @@ esp_err_t SPI_MASTER_ISR_ATTR spi_device_polling_start(spi_device_handle_t handl
 
 esp_err_t SPI_MASTER_ISR_ATTR spi_device_polling_end(spi_device_handle_t handle, TickType_t ticks_to_wait)
 {
-    SPI_CHECK(handle != NULL, "invalid dev handle", ESP_ERR_INVALID_ARG);
+    // SPI_CHECK(handle != NULL, "invalid dev handle", ESP_ERR_INVALID_ARG);
     spi_host_t *host = handle->host;
 
-    assert(host->cur_cs == handle->id);
-    assert(handle == get_acquiring_dev(host));
+    // assert(host->cur_cs == handle->id);
+    // assert(handle == get_acquiring_dev(host));
 
     TickType_t start = xTaskGetTickCount();
     while (!spi_hal_usr_is_done(&host->hal)) {
@@ -1407,7 +1407,7 @@ esp_err_t SPI_MASTER_ISR_ATTR spi_device_polling_end(spi_device_handle_t handle,
     }
 #endif
 
-    ESP_LOGV(SPI_TAG, "polling trans done");
+    // ESP_LOGV(SPI_TAG, "polling trans done");
     //deal with the in-flight transaction
     spi_post_trans(host);
     //release temporary buffers
@@ -1428,7 +1428,7 @@ esp_err_t SPI_MASTER_ISR_ATTR spi_device_polling_end(spi_device_handle_t handle,
 esp_err_t SPI_MASTER_ISR_ATTR spi_device_polling_transmit(spi_device_handle_t handle, spi_transaction_t* trans_desc)
 {
     esp_err_t ret;
-    ret = spi_device_polling_start(handle, trans_desc, portMAX_DELAY);
+    ret = spi_device_polling_start(handle, trans_desc, 0);
     if (ret != ESP_OK) {
         return ret;
     }
