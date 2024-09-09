@@ -102,7 +102,7 @@ else()
     idf_component_register(SRCS "${srcs}"
                            INCLUDE_DIRS ${includes}
                            PRIV_REQUIRES efuse esp_timer esp_mm
-                           REQUIRES esp_pm esp_ringbuf freertos soc hal esp_hw_support
+                           REQUIRES esp_pm esp_ringbuf freertos soc hal esp_hw_support esp_timer
                            # for backward compatibility, the driver component needs to
                            # have a public dependency on other "esp_driver_foo" components
                                     esp_driver_gpio esp_driver_pcnt esp_driver_gptimer esp_driver_spi esp_driver_mcpwm

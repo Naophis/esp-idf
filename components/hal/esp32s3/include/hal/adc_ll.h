@@ -691,17 +691,21 @@ static inline void adc_ll_set_controller(adc_unit_t adc_n, adc_ll_controller_t c
         }
     } else { // adc_n == ADC_UNIT_2
         //If ADC2 is not controlled by ULP, the arbiter will decide which controller to use ADC2.
-        switch (ctrl) {
-            case ADC_LL_CTRL_ARB:
-                SENS.sar_meas2_ctrl2.meas2_start_force  = 1;    // 1: SW control RTC ADC start;     0: ULP control RTC ADC start.
-                SENS.sar_meas2_ctrl2.sar2_en_pad_force  = 1;    // 1: SW control RTC ADC bit map;   0: ULP control RTC ADC bit map;
-                break;
-            case ADC_LL_CTRL_ULP:
-                SENS.sar_meas2_ctrl2.meas2_start_force  = 0;    // 1: SW control RTC ADC start;     0: ULP control RTC ADC start.
-                SENS.sar_meas2_ctrl2.sar2_en_pad_force  = 0;    // 1: SW control RTC ADC bit map;   0: ULP control RTC ADC bit map;
-                break;
-            default:
-                break;
+        static bool first = true;
+        if(first){
+            first = false;
+            switch (ctrl) {
+                case ADC_LL_CTRL_ARB:
+                    SENS.sar_meas2_ctrl2.meas2_start_force  = 1;    // 1: SW control RTC ADC start;     0: ULP control RTC ADC start.
+                    SENS.sar_meas2_ctrl2.sar2_en_pad_force  = 1;    // 1: SW control RTC ADC bit map;   0: ULP control RTC ADC bit map;
+                    break;
+                case ADC_LL_CTRL_ULP:
+                    SENS.sar_meas2_ctrl2.meas2_start_force  = 0;    // 1: SW control RTC ADC start;     0: ULP control RTC ADC start.
+                    SENS.sar_meas2_ctrl2.sar2_en_pad_force  = 0;    // 1: SW control RTC ADC bit map;   0: ULP control RTC ADC bit map;
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }
@@ -924,7 +928,7 @@ static inline void adc_ll_set_sar_clk_div(adc_unit_t adc_n, uint32_t div)
 static inline void adc_oneshot_ll_set_output_bits(adc_unit_t adc_n, adc_bitwidth_t bits)
 {
     //ESP32S3 only supports 12bit, leave here for compatibility
-    HAL_ASSERT(bits == ADC_BITWIDTH_12 || bits == ADC_BITWIDTH_DEFAULT);
+    // HAL_ASSERT(bits == ADC_BITWIDTH_12 || bits == ADC_BITWIDTH_DEFAULT);
 }
 
 /**
@@ -937,11 +941,12 @@ static inline void adc_oneshot_ll_set_output_bits(adc_unit_t adc_n, adc_bitwidth
  */
 static inline void adc_oneshot_ll_set_channel(adc_unit_t adc_n, adc_channel_t channel)
 {
-    if (adc_n == ADC_UNIT_1) {
-        SENS.sar_meas1_ctrl2.sar1_en_pad = (1 << channel); //only one channel is selected.
-    } else { // adc_n == ADC_UNIT_2
-        SENS.sar_meas2_ctrl2.sar2_en_pad = (1 << channel); //only one channel is selected.
-    }
+    // if (adc_n == ADC_UNIT_1) {
+    //     SENS.sar_meas1_ctrl2.sar1_en_pad = (1 << channel); //only one channel is selected.
+    // } else { // adc_n == ADC_UNIT_2
+    //     SENS.sar_meas2_ctrl2.sar2_en_pad = (1 << channel); //only one channel is selected.
+    // }
+    SENS.sar_meas2_ctrl2.sar2_en_pad = (1 << channel); //only one channel is selected.
 }
 
 /**
@@ -970,14 +975,16 @@ static inline void adc_oneshot_ll_disable_channel(adc_unit_t adc_n)
  */
 static inline void adc_oneshot_ll_start(adc_unit_t adc_n)
 {
-    if (adc_n == ADC_UNIT_1) {
-        while (HAL_FORCE_READ_U32_REG_FIELD(SENS.sar_slave_addr1, meas_status) != 0) {}
-        SENS.sar_meas1_ctrl2.meas1_start_sar = 0;
-        SENS.sar_meas1_ctrl2.meas1_start_sar = 1;
-    } else { // adc_n == ADC_UNIT_2
-        SENS.sar_meas2_ctrl2.meas2_start_sar = 0; //start force 0
-        SENS.sar_meas2_ctrl2.meas2_start_sar = 1; //start force 1
-    }
+    // if (adc_n == ADC_UNIT_1) {
+    //     while (HAL_FORCE_READ_U32_REG_FIELD(SENS.sar_slave_addr1, meas_status) != 0) {}
+    //     SENS.sar_meas1_ctrl2.meas1_start_sar = 0;
+    //     SENS.sar_meas1_ctrl2.meas1_start_sar = 1;
+    // } else { // adc_n == ADC_UNIT_2
+    //     SENS.sar_meas2_ctrl2.meas2_start_sar = 0; //start force 0
+    //     SENS.sar_meas2_ctrl2.meas2_start_sar = 1; //start force 1
+    // }
+    SENS.sar_meas2_ctrl2.meas2_start_sar = 0; //start force 0
+    SENS.sar_meas2_ctrl2.meas2_start_sar = 1; //start force 1
 }
 
 /**
@@ -1001,15 +1008,16 @@ static inline void adc_oneshot_ll_clear_event(uint32_t event)
  */
 static inline bool adc_oneshot_ll_get_event(uint32_t event)
 {
-    bool ret = true;
-    if (event == ADC_LL_EVENT_ADC1_ONESHOT_DONE) {
-        ret = (bool)SENS.sar_meas1_ctrl2.meas1_done_sar;
-    } else if (event == ADC_LL_EVENT_ADC2_ONESHOT_DONE) {
-        ret = (bool)SENS.sar_meas2_ctrl2.meas2_done_sar;
-    } else {
-        HAL_ASSERT(false);
-    }
-    return ret;
+    // bool ret = true;
+    // if (event == ADC_LL_EVENT_ADC1_ONESHOT_DONE) {
+    //     ret = (bool)SENS.sar_meas1_ctrl2.meas1_done_sar;
+    // } else if (event == ADC_LL_EVENT_ADC2_ONESHOT_DONE) {
+    //     ret = (bool)SENS.sar_meas2_ctrl2.meas2_done_sar;
+    // } else {
+    //     HAL_ASSERT(false);
+    // }
+    // return ret;
+    return  (bool)SENS.sar_meas2_ctrl2.meas2_done_sar;
 }
 
 /**
@@ -1021,13 +1029,14 @@ static inline bool adc_oneshot_ll_get_event(uint32_t event)
  */
 static inline uint32_t adc_oneshot_ll_get_raw_result(adc_unit_t adc_n)
 {
-    uint32_t ret_val = 0;
-    if (adc_n == ADC_UNIT_1) {
-        ret_val = HAL_FORCE_READ_U32_REG_FIELD(SENS.sar_meas1_ctrl2, meas1_data_sar);
-    } else { // adc_n == ADC_UNIT_2
-        ret_val = HAL_FORCE_READ_U32_REG_FIELD(SENS.sar_meas2_ctrl2, meas2_data_sar);
-    }
-    return ret_val;
+    // uint32_t ret_val = 0;
+    // if (adc_n == ADC_UNIT_1) {
+    //     ret_val = HAL_FORCE_READ_U32_REG_FIELD(SENS.sar_meas1_ctrl2, meas1_data_sar);
+    // } else { // adc_n == ADC_UNIT_2
+    //     ret_val = HAL_FORCE_READ_U32_REG_FIELD(SENS.sar_meas2_ctrl2, meas2_data_sar);
+    // }
+    // return ret_val;
+    return HAL_FORCE_READ_U32_REG_FIELD(SENS.sar_meas2_ctrl2, meas2_data_sar);
 }
 
 /**
