@@ -259,8 +259,8 @@ static esp_err_t spi_master_init_driver(spi_host_device_t host_id)
 
     const spi_bus_attr_t* bus_attr = spi_bus_get_attr(host_id);
     const spi_dma_ctx_t *dma_ctx = spi_bus_get_dma_ctx(host_id);
-    SPI_CHECK(bus_attr != NULL, "host_id not initialized", ESP_ERR_INVALID_STATE);
-    SPI_CHECK(bus_attr->lock != NULL, "SPI Master cannot attach to bus. (Check CONFIG_SPI_FLASH_SHARE_SPI1_BUS)", ESP_ERR_INVALID_ARG);
+    // SPI_CHECK(bus_attr != NULL, "host_id not initialized", ESP_ERR_INVALID_STATE);
+    // SPI_CHECK(bus_attr->lock != NULL, "SPI Master cannot attach to bus. (Check CONFIG_SPI_FLASH_SHARE_SPI1_BUS)", ESP_ERR_INVALID_ARG);
     // spihost contains atomic variables, which should not be put in PSRAM
     spi_host_t* host = heap_caps_malloc(sizeof(spi_host_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     if (host == NULL) {
@@ -769,8 +769,11 @@ static void SPI_MASTER_ISR_ATTR spi_new_trans(spi_device_t *dev, spi_trans_priv_
 
     //set the transaction specific configuration each time before a transaction setup
     spi_hal_trans_config_t hal_trans = {};
+
     spi_format_hal_trans_struct(dev, trans_buf, &hal_trans);
-    spi_hal_setup_trans(hal, hal_dev, &hal_trans);
+
+    spi_hal_setup_trans(hal, hal_dev, &hal_trans); // 5usec
+
     s_spi_prepare_data(dev, &hal_trans);
 
     //Call pre-transmission callback, if any
@@ -779,6 +782,7 @@ static void SPI_MASTER_ISR_ATTR spi_new_trans(spi_device_t *dev, spi_trans_priv_
     }
     //Kick off transfer
     spi_hal_user_start(hal);
+
 }
 
 // The function is called when a transaction is done, in ISR or in the task.
@@ -862,10 +866,10 @@ static void SPI_MASTER_ISR_ATTR spi_post_sct_trans(spi_host_t *host)
     }
 
     free(host->cur_sct_trans.sct_conf_buffer);
-    portENTER_CRITICAL_ISR(&host->spinlock);
+    // portENTER_CRITICAL_ISR(&host->spinlock);
     spi_hal_sct_tx_dma_desc_recycle(&host->sct_desc_pool, host->cur_sct_trans.tx_used_desc_num);
     spi_hal_sct_rx_dma_desc_recycle(&host->sct_desc_pool, host->cur_sct_trans.rx_used_desc_num);
-    portEXIT_CRITICAL_ISR(&host->spinlock);
+    // portEXIT_CRITICAL_ISR(&host->spinlock);
     if (host->device[host->cur_cs]->cfg.post_cb) {
         host->device[host->cur_cs]->cfg.post_cb((spi_transaction_t *)host->cur_sct_trans.sct_trans_desc_head);
     }
@@ -1270,8 +1274,8 @@ esp_err_t SPI_MASTER_ATTR spi_device_transmit(spi_device_handle_t handle, spi_tr
 esp_err_t SPI_MASTER_ISR_ATTR spi_device_acquire_bus(spi_device_t *device, TickType_t wait)
 {
     spi_host_t *const host = device->host;
-    SPI_CHECK(wait == portMAX_DELAY, "acquire finite time not supported now.", ESP_ERR_INVALID_ARG);
-    SPI_CHECK(!spi_bus_device_is_polling(device), "Cannot acquire bus when a polling transaction is in progress.", ESP_ERR_INVALID_STATE);
+    // SPI_CHECK(wait == portMAX_DELAY, "acquire finite time not supported now.", ESP_ERR_INVALID_ARG);
+    // SPI_CHECK(!spi_bus_device_is_polling(device), "Cannot acquire bus when a polling transaction is in progress.", ESP_ERR_INVALID_STATE);
 
     esp_err_t ret = spi_bus_lock_acquire_start(device->dev_lock, wait);
     if (ret != ESP_OK) {
@@ -1279,7 +1283,7 @@ esp_err_t SPI_MASTER_ISR_ATTR spi_device_acquire_bus(spi_device_t *device, TickT
     }
     host->device_acquiring_lock = device;
 
-    ESP_LOGD(SPI_TAG, "device%d locked the bus", device->id);
+    // ESP_LOGD(SPI_TAG, "device%d locked the bus", device->id);
 
 #ifdef CONFIG_PM_ENABLE
     // though we don't suggest to block the task before ``release_bus``, still allow doing so.
@@ -1340,14 +1344,12 @@ esp_err_t SPI_MASTER_ISR_ATTR spi_device_polling_start(spi_device_handle_t handl
         return ret;
     }
     // SPI_CHECK(!spi_bus_device_is_polling(handle), "Cannot send polling transaction while the previous polling transaction is not terminated.", ESP_ERR_INVALID_STATE);
-
     spi_host_t *host = handle->host;
     spi_trans_priv_t priv_polling_trans = { .trans = trans_desc, };
     ret = setup_priv_desc(host, &priv_polling_trans);
     if (ret != ESP_OK) {
         return ret;
     }
-
     /* If device_acquiring_lock is set to handle, it means that the user has already
      * acquired the bus thanks to the function `spi_device_acquire_bus()`.
      * In that case, we don't need to take the lock again. */
@@ -1791,18 +1793,18 @@ esp_err_t SPI_MASTER_ATTR spi_device_queue_multi_trans(spi_device_handle_t handl
 
     //TX
     tx_buf_len = (seg_trans_desc[0].base.length + 8 - 1) / 8;
-    portENTER_CRITICAL(&handle->host->spinlock);
+    // portENTER_CRITICAL(&handle->host->spinlock);
     dma_desc_status = spi_hal_sct_new_tx_dma_desc_head(&handle->host->sct_desc_pool, conf_buffer, seg_trans_desc[0].base.tx_buffer, tx_buf_len, &tx_seg_head, &tx_used_dma_desc_num);
-    portEXIT_CRITICAL(&handle->host->spinlock);
+    // portEXIT_CRITICAL(&handle->host->spinlock);
     SPI_CHECK(dma_desc_status == ESP_OK, "No available dma descriptors, increase the `max_transfer_sz`, or wait queued transactions are done", ESP_ERR_INVALID_STATE);
 
     //RX
     //This is modified to the same length as tx length, when in fd mode, else it's `rxlength`
     rx_buf_len = (seg_trans_desc[0].base.rxlength + 8 - 1) / 8;
     if (seg_trans_desc[0].base.rx_buffer) {
-        portENTER_CRITICAL(&handle->host->spinlock);
+        // portENTER_CRITICAL(&handle->host->spinlock);
         dma_desc_status = spi_hal_sct_new_rx_dma_desc_head(&handle->host->sct_desc_pool, seg_trans_desc[0].base.rx_buffer, rx_buf_len, &rx_seg_head, &rx_used_dma_desc_num);
-        portEXIT_CRITICAL(&handle->host->spinlock);
+        // portEXIT_CRITICAL(&handle->host->spinlock);
         SPI_CHECK(dma_desc_status == ESP_OK, "No available dma descriptors, increase the `max_transfer_sz`, or wait queued transactions are done", ESP_ERR_INVALID_STATE);
     }
 
@@ -1812,18 +1814,18 @@ esp_err_t SPI_MASTER_ATTR spi_device_queue_multi_trans(spi_device_handle_t handl
 
         //TX
         tx_buf_len = (seg_trans_desc[i].base.length + 8 - 1) / 8;
-        portENTER_CRITICAL(&handle->host->spinlock);
+        // portENTER_CRITICAL(&handle->host->spinlock);
         dma_desc_status = spi_hal_sct_link_tx_seg_dma_desc(&handle->host->sct_desc_pool, &conf_buffer[i * SOC_SPI_SCT_BUFFER_NUM_MAX], seg_trans_desc[i].base.tx_buffer, tx_buf_len, &tx_used_dma_desc_num);
-        portEXIT_CRITICAL(&handle->host->spinlock);
-        SPI_CHECK(dma_desc_status == ESP_OK, "No available dma descriptors, increase the `max_transfer_sz`, or wait queued transactions are done", ESP_ERR_INVALID_STATE);
+        // portEXIT_CRITICAL(&handle->host->spinlock);
+        // SPI_CHECK(dma_desc_status == ESP_OK, "No available dma descriptors, increase the `max_transfer_sz`, or wait queued transactions are done", ESP_ERR_INVALID_STATE);
 
         //RX
         if (seg_trans_desc[i].base.rx_buffer) {
             //This is modified to the same length as tx length, when in fd mode, else it's `rxlength`
             rx_buf_len = (seg_trans_desc[i].base.rxlength + 8 - 1) / 8;
-            portENTER_CRITICAL(&handle->host->spinlock);
+            // portENTER_CRITICAL(&handle->host->spinlock);
             dma_desc_status = spi_hal_sct_link_rx_seg_dma_desc(&handle->host->sct_desc_pool, seg_trans_desc[i].base.rx_buffer, rx_buf_len, &rx_used_dma_desc_num);
-            portEXIT_CRITICAL(&handle->host->spinlock);
+            // portEXIT_CRITICAL(&handle->host->spinlock);
         }
     }
 

@@ -962,7 +962,7 @@ bool IRAM_ATTR spicommon_dmaworkaround_req_reset(int dmachan, dmaworkaround_cb_t
 
     int otherchan = (dmachan == 1) ? 2 : 1;
     bool ret;
-    portENTER_CRITICAL_ISR(&dmaworkaround_mux);
+    // portENTER_CRITICAL_ISR(&dmaworkaround_mux);
     if (dmaworkaround_channels_busy[otherchan - 1]) {
         //Other channel is busy. Call back when it's done.
         dmaworkaround_cb = cb;
@@ -976,7 +976,7 @@ bool IRAM_ATTR spicommon_dmaworkaround_req_reset(int dmachan, dmaworkaround_cb_t
         }
         ret = true;
     }
-    portEXIT_CRITICAL_ISR(&dmaworkaround_mux);
+    // portEXIT_CRITICAL_ISR(&dmaworkaround_mux);
     return ret;
 }
 
@@ -987,7 +987,7 @@ bool IRAM_ATTR spicommon_dmaworkaround_reset_in_progress(void)
 
 void IRAM_ATTR spicommon_dmaworkaround_idle(int dmachan)
 {
-    portENTER_CRITICAL_ISR(&dmaworkaround_mux);
+    // portENTER_CRITICAL_ISR(&dmaworkaround_mux);
     dmaworkaround_channels_busy[dmachan - 1] = 0;
     if (dmaworkaround_waiting_for_chan == dmachan) {
         //Reset DMA
@@ -999,13 +999,13 @@ void IRAM_ATTR spicommon_dmaworkaround_idle(int dmachan)
         dmaworkaround_cb(dmaworkaround_cb_arg);
 
     }
-    portEXIT_CRITICAL_ISR(&dmaworkaround_mux);
+    // portEXIT_CRITICAL_ISR(&dmaworkaround_mux);
 }
 
 void IRAM_ATTR spicommon_dmaworkaround_transfer_active(int dmachan)
 {
-    portENTER_CRITICAL_ISR(&dmaworkaround_mux);
+    // portENTER_CRITICAL_ISR(&dmaworkaround_mux);
     dmaworkaround_channels_busy[dmachan - 1] = 1;
-    portEXIT_CRITICAL_ISR(&dmaworkaround_mux);
+    // portEXIT_CRITICAL_ISR(&dmaworkaround_mux);
 }
 #endif //#if CONFIG_IDF_TARGET_ESP32

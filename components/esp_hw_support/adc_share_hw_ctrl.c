@@ -61,7 +61,7 @@ static uint32_t s_adc_cali_param[SOC_ADC_PERIPH_NUM][SOC_ADC_ATTEN_NUM] = {};
 void adc_calc_hw_calibration_code(adc_unit_t adc_n, adc_atten_t atten)
 {
     if (s_adc_cali_param[adc_n][atten]) {
-        ESP_EARLY_LOGV(TAG, "Use calibrated val ADC%d atten=%d: %04" PRIX32, adc_n + 1, atten, s_adc_cali_param[adc_n][atten]);
+        // ESP_EARLY_LOGV(TAG, "Use calibrated val ADC%d atten=%d: %04" PRIX32, adc_n + 1, atten, s_adc_cali_param[adc_n][atten]);
         return ;
     }
 
@@ -77,13 +77,13 @@ void adc_calc_hw_calibration_code(adc_unit_t adc_n, adc_atten_t atten)
     }
 #if SOC_ADC_SELF_HW_CALI_SUPPORTED
     else {
-        ESP_EARLY_LOGD(TAG, "Calibration eFuse is not configured, use self-calibration for ICode");
+        // ESP_EARLY_LOGD(TAG, "Calibration eFuse is not configured, use self-calibration for ICode");
         sar_periph_ctrl_adc_oneshot_power_acquire();
-        portENTER_CRITICAL(&rtc_spinlock);
+        // portENTER_CRITICAL(&rtc_spinlock);
         adc_ll_pwdet_set_cct(ADC_LL_PWDET_CCT_DEFAULT);
         const bool internal_gnd = true;
         init_code = adc_hal_self_calibration(adc_n, atten, internal_gnd);
-        portEXIT_CRITICAL(&rtc_spinlock);
+        // portEXIT_CRITICAL(&rtc_spinlock);
         sar_periph_ctrl_adc_oneshot_power_release();
     }
 #else
@@ -93,7 +93,7 @@ void adc_calc_hw_calibration_code(adc_unit_t adc_n, adc_atten_t atten)
 #endif  //SOC_ADC_SELF_HW_CALI_SUPPORTED
 
     s_adc_cali_param[adc_n][atten] = init_code;
-    ESP_EARLY_LOGV(TAG, "Calib(V%d) ADC%d atten=%d: %04" PRIX32, version, adc_n + 1, atten, init_code);
+    // ESP_EARLY_LOGV(TAG, "Calib(V%d) ADC%d atten=%d: %04" PRIX32, version, adc_n + 1, atten, init_code);
 }
 
 void IRAM_ATTR adc_set_hw_calibration_code(adc_unit_t adc_n, adc_atten_t atten)
@@ -130,65 +130,65 @@ static _lock_t adc2_lock;
 
 esp_err_t adc_lock_acquire(adc_unit_t adc_unit)
 {
-    if (adc_unit == ADC_UNIT_1) {
-        _lock_acquire(&adc1_lock);
-    }
+    // if (adc_unit == ADC_UNIT_1) {
+    //     _lock_acquire(&adc1_lock);
+    // }
 
-    if (adc_unit == ADC_UNIT_2) {
-        _lock_acquire(&adc2_lock);
-    }
+    // if (adc_unit == ADC_UNIT_2) {
+    //     _lock_acquire(&adc2_lock);
+    // }
 
     return ESP_OK;
 }
 
 esp_err_t adc_lock_release(adc_unit_t adc_unit)
 {
-    if (adc_unit == ADC_UNIT_2) {
-        ESP_RETURN_ON_FALSE(((uint32_t *)adc2_lock != NULL), ESP_ERR_INVALID_STATE, TAG, "adc2 lock release without acquiring");
-        _lock_release(&adc2_lock);
-    }
+    // if (adc_unit == ADC_UNIT_2) {
+    //     ESP_RETURN_ON_FALSE(((uint32_t *)adc2_lock != NULL), ESP_ERR_INVALID_STATE, TAG, "adc2 lock release without acquiring");
+    //     _lock_release(&adc2_lock);
+    // }
 
-    if (adc_unit == ADC_UNIT_1) {
-        ESP_RETURN_ON_FALSE(((uint32_t *)adc1_lock != NULL), ESP_ERR_INVALID_STATE, TAG, "adc1 lock release without acquiring");
-        _lock_release(&adc1_lock);
-    }
+    // if (adc_unit == ADC_UNIT_1) {
+    //     ESP_RETURN_ON_FALSE(((uint32_t *)adc1_lock != NULL), ESP_ERR_INVALID_STATE, TAG, "adc1 lock release without acquiring");
+    //     _lock_release(&adc1_lock);
+    // }
 
     return ESP_OK;
 }
 
 esp_err_t adc_lock_try_acquire(adc_unit_t adc_unit)
 {
-    if (adc_unit == ADC_UNIT_1) {
-        if (_lock_try_acquire(&adc1_lock) == -1) {
-            return ESP_ERR_TIMEOUT;
-        }
-    }
+    // if (adc_unit == ADC_UNIT_1) {
+    //     if (_lock_try_acquire(&adc1_lock) == -1) {
+    //         return ESP_ERR_TIMEOUT;
+    //     }
+    // }
 
-    if (adc_unit == ADC_UNIT_2) {
-        if (_lock_try_acquire(&adc2_lock) == -1) {
-            return ESP_ERR_TIMEOUT;
-        }
-    }
+    // if (adc_unit == ADC_UNIT_2) {
+    //     if (_lock_try_acquire(&adc2_lock) == -1) {
+    //         return ESP_ERR_TIMEOUT;
+    //     }
+    // }
 
     return ESP_OK;
 }
 
 esp_err_t adc2_wifi_acquire(void)
 {
-#if CONFIG_IDF_TARGET_ESP32
-    /* Wi-Fi module will use adc2. Use locks to avoid conflicts. */
-    adc_lock_acquire(ADC_UNIT_2);
-    ESP_LOGD(TAG, "Wi-Fi takes adc2 lock.");
-#endif
+// #if CONFIG_IDF_TARGET_ESP32
+//     /* Wi-Fi module will use adc2. Use locks to avoid conflicts. */
+//     adc_lock_acquire(ADC_UNIT_2);
+//     ESP_LOGD(TAG, "Wi-Fi takes adc2 lock.");
+// #endif
 
     return ESP_OK;
 }
 
 esp_err_t adc2_wifi_release(void)
 {
-#if CONFIG_IDF_TARGET_ESP32
-    return adc_lock_release(ADC_UNIT_2);
-#endif
+// #if CONFIG_IDF_TARGET_ESP32
+//     return adc_lock_release(ADC_UNIT_2);
+// #endif
 
     return ESP_OK;
 }
@@ -202,7 +202,7 @@ static int s_adc_digi_ctrlr_cnt;
 
 void adc_apb_periph_claim(void)
 {
-    portENTER_CRITICAL(&s_spinlock);
+    // portENTER_CRITICAL(&s_spinlock);
     s_adc_digi_ctrlr_cnt++;
     if (s_adc_digi_ctrlr_cnt == 1) {
         ADC_BUS_CLK_ATOMIC() {
@@ -211,22 +211,22 @@ void adc_apb_periph_claim(void)
         }
     }
 
-    portEXIT_CRITICAL(&s_spinlock);
+    // portEXIT_CRITICAL(&s_spinlock);
 }
 
 void adc_apb_periph_free(void)
 {
-    portENTER_CRITICAL(&s_spinlock);
+    // portENTER_CRITICAL(&s_spinlock);
     s_adc_digi_ctrlr_cnt--;
     if (s_adc_digi_ctrlr_cnt == 0) {
         ADC_BUS_CLK_ATOMIC() {
             adc_ll_enable_bus_clock(false);
         }
     } else if (s_adc_digi_ctrlr_cnt < 0) {
-        portEXIT_CRITICAL(&s_spinlock);
-        ESP_LOGE(TAG, "%s called, but `s_adc_digi_ctrlr_cnt == 0`", __func__);
-        abort();
+        // portEXIT_CRITICAL(&s_spinlock);
+        // ESP_LOGE(TAG, "%s called, but `s_adc_digi_ctrlr_cnt == 0`", __func__);
+        // abort();
     }
 
-    portEXIT_CRITICAL(&s_spinlock);
+    // portEXIT_CRITICAL(&s_spinlock);
 }

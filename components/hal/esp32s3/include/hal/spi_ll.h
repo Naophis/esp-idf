@@ -654,6 +654,7 @@ static inline void spi_ll_master_set_line_mode(spi_dev_t *hw, spi_line_mode_t li
 {
     static bool first =true;
     if(first){
+        first=false;
         hw->ctrl.val &= ~SPI_LL_ONE_LINE_CTRL_MASK;
         hw->user.val &= ~SPI_LL_ONE_LINE_USER_MASK;
         hw->ctrl.fcmd_dual = (line_mode.cmd_lines == 2);

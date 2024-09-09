@@ -368,9 +368,9 @@ SPI_BUS_LOCK_ISR_ATTR static inline bool acquire_core(spi_bus_lock_dev_t *dev_ha
     spi_bus_lock_t* lock = dev_handle->parent;
 
     //For this critical section, search `@note 1` in this file, to know details
-    portENTER_CRITICAL_SAFE(&s_spinlock);
+    // portENTER_CRITICAL_SAFE(&s_spinlock);
     uint32_t status = lock_status_fetch_set(lock, dev_handle->mask & LOCK_MASK);
-    portEXIT_CRITICAL_SAFE(&s_spinlock);
+    // portEXIT_CRITICAL_SAFE(&s_spinlock);
 
     // Check all bits except WEAK_BG
     if ((status & (BG_MASK | LOCK_MASK)) == 0) {
