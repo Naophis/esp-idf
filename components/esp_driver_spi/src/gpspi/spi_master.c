@@ -626,7 +626,11 @@ static SPI_MASTER_ISR_ATTR void spi_setup_device(spi_device_t *dev)
             //and sure (hs_div * mst_div = source_pre_div)
             spi_ll_clk_source_pre_div(hal->hw, hal_dev->timing_conf.source_pre_div / 2, 2);
 #endif
-            spi_ll_set_clk_source(hal->hw, hal_dev->timing_conf.clock_source);
+            static bool first = true;
+            if(first){
+                first=false;
+                spi_ll_set_clk_source(hal->hw, hal_dev->timing_conf.clock_source);
+            }
         }
     }
 }
@@ -1358,13 +1362,14 @@ esp_err_t SPI_MASTER_ISR_ATTR spi_device_polling_start(spi_device_handle_t handl
         if ((trans_desc->flags & SPI_TRANS_CS_KEEP_ACTIVE) != 0) {
             ret = ESP_ERR_INVALID_ARG;
         } else {
-            ret = spi_bus_lock_acquire_start(handle->dev_lock, ticks_to_wait);
+            // use here
+            ret = spi_bus_lock_acquire_start(handle->dev_lock, ticks_to_wait);  // don't need to wait here
         }
     } else {
-        ret = spi_bus_lock_wait_bg_done(handle->dev_lock, ticks_to_wait);
+        // ret = spi_bus_lock_wait_bg_done(handle->dev_lock, ticks_to_wait);
     }
     if (ret != ESP_OK) {
-        uninstall_priv_desc(&priv_polling_trans);
+        // uninstall_priv_desc(&priv_polling_trans);
         // ESP_LOGE(SPI_TAG, "polling can't get buslock");
         return ret;
     }
@@ -1430,12 +1435,19 @@ esp_err_t SPI_MASTER_ISR_ATTR spi_device_polling_end(spi_device_handle_t handle,
 esp_err_t SPI_MASTER_ISR_ATTR spi_device_polling_transmit(spi_device_handle_t handle, spi_transaction_t* trans_desc)
 {
     esp_err_t ret;
+    // long time = esp_timer_get_time();
     ret = spi_device_polling_start(handle, trans_desc, 0);
+
+    // long time2 = esp_timer_get_time();
     if (ret != ESP_OK) {
         return ret;
     }
 
-    return spi_device_polling_end(handle, portMAX_DELAY);
+    ret = spi_device_polling_end(handle, portMAX_DELAY);
+    //  long time3 = esp_timer_get_time();
+
+    //  printf("time:%ld, %ld\n", time2-time, time3-time2);
+     return ret;
 }
 
 esp_err_t spi_bus_get_max_transaction_len(spi_host_device_t host_id, size_t *max_bytes)

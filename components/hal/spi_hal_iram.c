@@ -19,19 +19,22 @@ void spi_hal_setup_device(spi_hal_context_t *hal, const spi_hal_dev_config_t *de
 #if SOC_SPI_AS_CS_SUPPORTED
     spi_ll_master_set_cksel(hw, dev->cs_pin_id, dev->as_cs);
 #endif
-    spi_ll_master_set_pos_cs(hw, dev->cs_pin_id, dev->positive_cs);
-    spi_ll_master_set_clock_by_reg(hw, &dev->timing_conf.clock_reg);
-    //Configure bit order
-    spi_ll_set_rx_lsbfirst(hw, dev->rx_lsbfirst);
-    spi_ll_set_tx_lsbfirst(hw, dev->tx_lsbfirst);
-    spi_ll_master_set_mode(hw, dev->mode);
-    //Configure misc stuff
-    spi_ll_set_half_duplex(hw, dev->half_duplex);
-    spi_ll_set_sio_mode(hw, dev->sio);
-    //Configure CS pin and timing
-    spi_ll_master_set_cs_setup(hw, dev->cs_setup);
-    spi_ll_master_set_cs_hold(hw, dev->cs_hold);
+    if(!hal->initialized) {
+        spi_ll_master_set_pos_cs(hw, dev->cs_pin_id, dev->positive_cs); //first set cs
+        spi_ll_master_set_clock_by_reg(hw, &dev->timing_conf.clock_reg); //first set clock
+        //Configure bit order
+        spi_ll_set_rx_lsbfirst(hw, dev->rx_lsbfirst); //first set bit order
+        spi_ll_set_tx_lsbfirst(hw, dev->tx_lsbfirst); //first set bit order
+        spi_ll_master_set_mode(hw, dev->mode); //first set mode
+        //Configure misc stuff
+        spi_ll_set_half_duplex(hw, dev->half_duplex);
+        spi_ll_set_sio_mode(hw, dev->sio);
+        //Configure CS pin and timing
+        spi_ll_master_set_cs_setup(hw, dev->cs_setup);
+        spi_ll_master_set_cs_hold(hw, dev->cs_hold);
+    }
     spi_ll_master_select_cs(hw, dev->cs_pin_id);
+    hal->initialized = true;
 }
 
 void spi_hal_setup_trans(spi_hal_context_t *hal, const spi_hal_dev_config_t *dev, const spi_hal_trans_config_t *trans)
@@ -79,7 +82,7 @@ void spi_hal_setup_trans(spi_hal_context_t *hal, const spi_hal_dev_config_t *dev
         miso_delay_num = extra_dummy ? dev->timing_conf.timing_miso_delay : 0;
         miso_delay_mode = 0;
     }
-    spi_ll_set_miso_delay(hw, miso_delay_mode, miso_delay_num);
+    // spi_ll_set_miso_delay(hw, miso_delay_mode, miso_delay_num); //don't use
 
     spi_ll_set_mosi_bitlen(hw, trans->tx_bitlen);
 

@@ -102,6 +102,7 @@ typedef struct {
 typedef struct {
     /* Configured by driver at initialization, don't touch */
     spi_dev_t     *hw;                  ///< Beginning address of the peripheral registers.
+    bool  initialized;                 ///< Whether the peripheral is initialized, do not update after initialization
     bool  dma_enabled;                  ///< Whether the DMA is enabled, do not update after initialization
     /* Internal parameters, don't touch */
     spi_hal_trans_config_t trans_config; ///< Transaction configuration
