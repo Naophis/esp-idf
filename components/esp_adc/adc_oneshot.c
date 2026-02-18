@@ -29,6 +29,7 @@
 #include "hal/adc_oneshot_hal.h"
 #include "hal/adc_ll.h"
 #include "soc/adc_periph.h"
+#include "esp_timer.h"
 
 #if CONFIG_ADC_ONESHOT_CTRL_FUNC_IN_IRAM
 #define ADC_MEM_ALLOC_CAPS   (MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT)
@@ -168,25 +169,37 @@ esp_err_t adc_oneshot_config_channel(adc_oneshot_unit_handle_t handle, adc_chann
 
 esp_err_t adc_oneshot_read(adc_oneshot_unit_handle_t handle, adc_channel_t chan, int *out_raw)
 {
-    ESP_RETURN_ON_FALSE(handle && out_raw, ESP_ERR_INVALID_ARG, TAG, "invalid argument: null pointer");
-    ESP_RETURN_ON_FALSE(chan < SOC_ADC_CHANNEL_NUM(handle->unit_id), ESP_ERR_INVALID_ARG, TAG, "invalid channel");
+    // ESP_RETURN_ON_FALSE(handle && out_raw, ESP_ERR_INVALID_ARG, TAG, "invalid argument: null pointer");
+    // ESP_RETURN_ON_FALSE(chan < SOC_ADC_CHANNEL_NUM(handle->unit_id), ESP_ERR_INVALID_ARG, TAG, "invalid channel");
 
-    if (adc_lock_try_acquire(handle->unit_id) != ESP_OK) {
-        return ESP_ERR_TIMEOUT;
+    // if (adc_lock_try_acquire(handle->unit_id) != ESP_OK) {
+    //     return ESP_ERR_TIMEOUT;
+    // }
+    // portENTER_CRITICAL(&rtc_spinlock);
+
+    static bool first = true;
+    if (first) {
+        first = false;
     }
-    portENTER_CRITICAL(&rtc_spinlock);
-
-    adc_oneshot_hal_setup(&(handle->hal), chan);
-#if SOC_ADC_CALIBRATION_V1_SUPPORTED
-    adc_atten_t atten = adc_ll_get_atten(handle->unit_id, chan);
-    adc_hal_calibration_init(handle->unit_id);
-    adc_set_hw_calibration_code(handle->unit_id, atten);
-#endif  // SOC_ADC_CALIBRATION_V1_SUPPORTED
+    long long t1 = esp_timer_get_time();
+    adc_oneshot_hal_setup(&(handle->hal), chan); //5~6usec
+    long long t2 = esp_timer_get_time();
+// #if SOC_ADC_CALIBRATION_V1_SUPPORTED
+    adc_atten_t atten = adc_ll_get_atten(handle->unit_id, chan); //1usec
+long long t3 = esp_timer_get_time();
+    adc_hal_calibration_init(handle->unit_id);//10usec
+    long long t4 = esp_timer_get_time();
+    adc_set_hw_calibration_code(handle->unit_id, atten);//10sec
+    long long t5 = esp_timer_get_time();
+// #endif  // SOC_ADC_CALIBRATION_V1_SUPPORTED
     bool valid = false;
-    valid = adc_oneshot_hal_convert(&(handle->hal), out_raw);
+    
+    valid = adc_oneshot_hal_convert(&(handle->hal), out_raw);//6usec
+    long long t6 = esp_timer_get_time();
 
-    portEXIT_CRITICAL(&rtc_spinlock);
-    adc_lock_release(handle->unit_id);
+    // printf("adc_oneshot_read: %lld, %lld, %lld, %lld, %lld, %lld\n", t2 - t1, t3 - t2, t4 - t3, t5 - t4, t6 - t5, t6- t1);
+    // portEXIT_CRITICAL(&rtc_spinlock);
+    // adc_lock_release(handle->unit_id);
 
     return valid ? ESP_OK : ESP_ERR_TIMEOUT;
 }

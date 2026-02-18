@@ -384,30 +384,31 @@ esp_err_t adc1_lock_release(void)
 
 int adc1_get_raw(adc1_channel_t channel)
 {
-    int adc_value;
-    ESP_RETURN_ON_FALSE(channel < SOC_ADC_CHANNEL_NUM(ADC_UNIT_1), ESP_ERR_INVALID_ARG, ADC_TAG, "invalid channel");
-    adc1_rtc_mode_acquire();
+    return 0;
+//     int adc_value;
+//     ESP_RETURN_ON_FALSE(channel < SOC_ADC_CHANNEL_NUM(ADC_UNIT_1), ESP_ERR_INVALID_ARG, ADC_TAG, "invalid channel");
+//     adc1_rtc_mode_acquire();
 
-#if SOC_ADC_CALIBRATION_V1_SUPPORTED
-    adc_atten_t atten = adc_ll_get_atten(ADC_UNIT_1, channel);
-    adc_set_hw_calibration_code(ADC_UNIT_1, atten);
-#endif  //SOC_ADC_CALIBRATION_V1_SUPPORTED
+// #if SOC_ADC_CALIBRATION_V1_SUPPORTED
+//     adc_atten_t atten = adc_ll_get_atten(ADC_UNIT_1, channel);
+//     adc_set_hw_calibration_code(ADC_UNIT_1, atten);
+// #endif  //SOC_ADC_CALIBRATION_V1_SUPPORTED
 
-    SARADC1_ENTER();
-#ifdef CONFIG_IDF_TARGET_ESP32
-    adc_ll_hall_disable(); //Disable other peripherals.
-    adc_ll_amp_disable();  //Currently the LNA is not open, close it by default.
-#endif
-    adc_ll_set_controller(ADC_UNIT_1, ADC_LL_CTRL_RTC);    //Set controller
-    adc_oneshot_ll_set_channel(ADC_UNIT_1, channel);
-    adc_hal_convert(ADC_UNIT_1, channel, clk_src_freq_hz, &adc_value);   //Start conversion, For ADC1, the data always valid.
-#if !CONFIG_IDF_TARGET_ESP32
-    adc_ll_rtc_reset();    //Reset FSM of rtc controller
-#endif
-    SARADC1_EXIT();
+//     SARADC1_ENTER();
+// #ifdef CONFIG_IDF_TARGET_ESP32
+//     adc_ll_hall_disable(); //Disable other peripherals.
+//     adc_ll_amp_disable();  //Currently the LNA is not open, close it by default.
+// #endif
+//     adc_ll_set_controller(ADC_UNIT_1, ADC_LL_CTRL_RTC);    //Set controller
+//     adc_oneshot_ll_set_channel(ADC_UNIT_1, channel);
+//     adc_hal_convert(ADC_UNIT_1, channel, clk_src_freq_hz, &adc_value);   //Start conversion, For ADC1, the data always valid.
+// #if !CONFIG_IDF_TARGET_ESP32
+//     adc_ll_rtc_reset();    //Reset FSM of rtc controller
+// #endif
+//     SARADC1_EXIT();
 
-    adc1_lock_release();
-    return adc_value;
+//     adc1_lock_release();
+//     return adc_value;
 }
 
 int adc1_get_voltage(adc1_channel_t channel)    //Deprecated. Use adc1_get_raw() instead
@@ -893,15 +894,23 @@ static IRAM_ATTR esp_err_t adc_hal_convert(adc_unit_t adc_n, int channel, uint32
 {
 
     uint32_t event = (adc_n == ADC_UNIT_1) ? ADC_LL_EVENT_ADC1_ONESHOT_DONE : ADC_LL_EVENT_ADC2_ONESHOT_DONE;
-    // adc_oneshot_ll_clear_event(event);
+    // Clear any previous event flags to ensure clean state
+    adc_oneshot_ll_clear_event(event);
     // adc_oneshot_ll_disable_all_unit();
     // adc_oneshot_ll_enable(adc_n);
     adc_oneshot_ll_set_channel(adc_n, channel);
 
     adc_hal_onetime_start(adc_n, clk_src_freq_hz);
 
+    // Add timeout to prevent infinite hang (approx 10ms timeout)
+    uint32_t timeout_counter = 0;
+    const uint32_t MAX_TIMEOUT = 15;  // 15us timeout, considering the conversion time and some margin
+    
     while (adc_oneshot_ll_get_event(event) != true) {
-        ;
+        if (++timeout_counter > MAX_TIMEOUT) {
+            return ESP_ERR_TIMEOUT;
+        }
+        esp_rom_delay_us(1);  // 1us delay per iteration
     }
 
     *out_raw = adc_oneshot_ll_get_raw_result(adc_n);

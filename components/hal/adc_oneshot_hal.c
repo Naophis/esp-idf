@@ -132,9 +132,9 @@ bool adc_oneshot_hal_convert(adc_oneshot_hal_ctx_t *hal, int *out_raw)
         event = ADC_LL_EVENT_ADC2_ONESHOT_DONE;
     }
 
-    adc_oneshot_ll_clear_event(event);
-    adc_oneshot_ll_disable_all_unit();
-    adc_oneshot_ll_enable(hal->unit);
+    // adc_oneshot_ll_clear_event(event);
+    // adc_oneshot_ll_disable_all_unit();
+    // adc_oneshot_ll_enable(hal->unit);
 
     adc_hal_onetime_start(hal->unit, hal->clk_src_freq_hz, &read_delay_us);
     while (!adc_oneshot_ll_get_event(event)) {
@@ -142,16 +142,16 @@ bool adc_oneshot_hal_convert(adc_oneshot_hal_ctx_t *hal, int *out_raw)
     }
     esp_rom_delay_us(read_delay_us);
     *out_raw = adc_oneshot_ll_get_raw_result(hal->unit);
-#if SOC_ADC_ARBITER_SUPPORTED
-    if (hal->unit == ADC_UNIT_2) {
-        valid = adc_oneshot_ll_raw_check_valid(ADC_UNIT_2, *out_raw);
-        if (!valid) {
-            *out_raw = -1;
-        }
-    }
-#endif
+// #if SOC_ADC_ARBITER_SUPPORTED
+//     if (hal->unit == ADC_UNIT_2) {
+//         valid = adc_oneshot_ll_raw_check_valid(ADC_UNIT_2, *out_raw); //not use
+//         if (!valid) {
+//             *out_raw = -1;
+//         }
+//     }
+// #endif
 
-    adc_oneshot_ll_disable_all_unit();
+    // adc_oneshot_ll_disable_all_unit();
     return valid;
 }
 
